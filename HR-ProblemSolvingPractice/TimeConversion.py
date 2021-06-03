@@ -1,6 +1,7 @@
 # https://www.hackerrank.com/challenges/time-conversion/problem
 
 # hint - midnight, 12:00:00AM Returns '00:00:00', not '24:00:00'
+# there are two special cases - midnight and noon
 # leading zero can be created with "{:02d}".format(digit)
 # note you are asked to return a string, not print a string.
 
