@@ -7,7 +7,7 @@
 # always inserting the value "one prior"
 # watch out for case where the number given will get sorted all the way down to the bottom.
 
-# hint - the mechanics of this type of problem in terms of how to set indexes are very persnickity.
+# hint - the mechanics of this type of problem in terms of how to set indexes are persnickity.
 # it was helpful to print out exactly what was happening for each operation as it happened.
 # the printed signals should be removed in order to submit successfully to hackerrank.
 # however running the program with the prints may help with understanding what is going on.
