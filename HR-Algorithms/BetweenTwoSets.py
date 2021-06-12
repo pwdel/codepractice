@@ -1,4 +1,9 @@
-# https://www.hackerrank.com/challenges/between-two-sets/forum
+# https://www.hackerrank.com/challenges/between-two-sets/problem
+
+# There will be two arrays of integers.
+# Determine all integers that satisfy the following two conditions:
+# 1. The elements of the first array are all factors of the integer being considered
+# 2. The integer being considered is a factor of all elements of the second array
 
 # hint - use sets() to get uniques of a function
 # hint - for all modulus == 0 (divided evenly), add a[x] to final count
