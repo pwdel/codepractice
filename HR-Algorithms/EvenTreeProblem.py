@@ -31,11 +31,15 @@
 # logically, leafs will have a value of 1, parents will have a value above 1.
 # note, since nodes are being assigned their child's value, any children which have a higher than 1 value
 # will retain information about how much is below them, that value is being, "passed up" the tree branch.
-# note that parents will also get a +1 in addition to the nodes below them, to count itself.
+# note that parents will also get a +1 in addition to the nodes below them, to count itself2.
 
-# then, you will have a table of weights showing how many are below each node on the tree.
+# then, you will have a dictionary of weights showing how many are below each node on the tree.
 # any node with an even value has an even number of nodes (including itself)
-
+# So therefore, a cut could be made above it to keep the branch even.
+# So the dictionary has all nodes as the keys, and even values if cuttable
+# and odd values if not cuttable.
+# so, we can go through and count the even values, that would be the number of cuts that can be made.
+# a basic for loop accomplishes this, with a modulus to tell whether even or odd.
 
 #!/bin/python3
 
