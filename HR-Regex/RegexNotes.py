@@ -48,3 +48,5 @@ print("^(.{3}\.){3}.{3}$ gives you: Do the first command three times, twice - EN
 # Alternate - r"^\d{2}\D\d{2}\D\d{4,}$" # Do not delete 'r'
 
 print("^ starts string. \ allows special characters. d{2} two decimals")
+
+.
