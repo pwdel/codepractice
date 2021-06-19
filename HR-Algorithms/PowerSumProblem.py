@@ -29,6 +29,19 @@
 # https://www.youtube.com/watch?v=ocZMDMZwhCY
 # https://www.youtube.com/watch?v=tp4_UXaVyx8
 
+# It's similar to the The Knapsack Problem.
+# We can assume that given a value for X and N, the greatest number any solution will have
+# won't be greater than ceil(X^(1/N)). As a simple and informal proof, if X = 1000 and N = 3,
+# any number greater than 10 would be invalid.
+# Find the maximum possible value, let's say k, numbers can have to form a valid combination.
+# Taking into account that all numbers must be distinct, we can create a recursive function
+# with a maximum of k-levels that at each one considers a value 1 <= i <= k.
+# At each level there are two options as happens on the Knapsack Problem:
+# adding the number (item) to the combination (knapsack) or not.
+
+Here is the code:
+
+
 #!/bin/python3
 
 import math
