@@ -49,4 +49,11 @@ print("^(.{3}\.){3}.{3}$ gives you: Do the first command three times, twice - EN
 
 print("^ starts string. \ allows special characters. d{2} two decimals")
 
-.
+# whitespace
+
+# r"^(.{3}\.){3}.{3}$"
+# r"^\d{2}\D\d{2}\D\d{4,}$"
+
+# r"^\s{2}\S\s{2}\S\S{4,}$"
+
+# sample input: 12 11 15
