@@ -42,6 +42,8 @@ print("^(.{3}\.){3}.{3}$ gives you: Do the first command three times, twice - EN
 # if input is 06-11-2015
 # Your task is to match the pattern xxXxxXxxxx
 # where x is a digit character and X is non-digit
+# sample input: 12-23-2014
+
 
 # Regex_Pattern = r"(\d{2}\D){2}\d{4}"	# Do not delete 'r'.
 
@@ -51,9 +53,41 @@ print("^ starts string. \ allows special characters. d{2} two decimals")
 
 # whitespace
 
-# r"^(.{3}\.){3}.{3}$"
-# r"^\d{2}\D\d{2}\D\d{4,}$"
-
-# r"^\s{2}\S\s{2}\S\S{4,}$"
-
+# r"(\S{2}\s){2}\S{2}"
 # sample input: 12 11 15
+
+
+# nonword
+
+# sample input:
+# www.hackerrank.com
+
+# Regex_Pattern = r"(\w{3}\W){1}\w{10}\W\w{3}"
+
+# note - when used ^ and $ at start and end of string, pattern failed to match:
+# http://www.wikipedia.com/http://www.hackerrank.com/
+# this is because we explicitly asked it to match this expression at the START and END
+# in other words, we explicitly told it that this is the only thing to look for.
+
+
+# starting and ending
+# Xxxxx - x is a word character. X is a digit.
+# S must start with X and end with .
+# only 6 characters long.
+# sample - 0qwer.
+
+# Regex_Pattern = r"(^\d{1}\w{4}\W{1}$)"
+
+
+
+# Excluding specific characters
+# First character should not be a digit
+# second character should not be a lowercase vowel (a,e,i,o,u)
+# Third character should not be b, c, D or F.
+# Fourth character should not be a whitespace character ( \r, \n, \t, \f or <space> ).
+# Fifth character should not be a uppercase vowel (A,E,I,O,U).
+# Sixth character should not be a . or , symbol.
+
+
+# sample input:
+# think?
