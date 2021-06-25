@@ -87,7 +87,7 @@ print("^ starts string. \ allows special characters. d{2} two decimals")
 # Fourth character should not be a whitespace character ( \r, \n, \t, \f or <space> ).
 # Fifth character should not be a uppercase vowel (A,E,I,O,U).
 # Sixth character should not be a . or , symbol.
-
-
 # sample input:
 # think?
+
+print("[] is used to indicate a set of characters. [amk] will match 'a', 'm', or 'k'")
