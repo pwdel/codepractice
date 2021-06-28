@@ -65,3 +65,8 @@ print("+ Causes the resulting RE to match 1 or more repetitions of the preceding
 print("*?, +?, ?? The '*', '+', and '?' qualifiers are all greedy; they match as much text as possible. Sometimes this behaviour isn’t desired; if the RE <.*> is matched against '<a> b <c>', it will match the entire string, and not just '<a>'. Adding ? after the qualifier makes it perform the match in non-greedy or minimal fashion; as few characters as possible will be matched. Using the RE <.*?> will match only '<a>'")
 print("|A|B, where A and B can be arbitrary REs, creates a regular expression that will match either A or B.")
 print("(...) Matches whatever regular expression is inside the parentheses, and indicates the start and end of a group")
+
+
+# open ended matching at end of string
+
+print("note the . denotes any character and the {,} denotes a wildcard for quantity.")
