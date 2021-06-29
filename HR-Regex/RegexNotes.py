@@ -1,3 +1,9 @@
+# View the Google CoLab Notebook on this project:
+# https://colab.research.google.com/drive/1ZZl6vgGWtDOE__WqthmAz1zuZkzh1hZ0?usp=sharing
+
+# helpful tool:
+# https://regexr.com/
+
 # the dot
 # https://www.regular-expressions.info/dot.html
 
@@ -70,3 +76,22 @@ print("(...) Matches whatever regular expression is inside the parentheses, and 
 # open ended matching at end of string
 
 print("note the . denotes any character and the {,} denotes a wildcard for quantity.")
+
+# Matching by group number
+
+print("^[A-Za-z.\s_-]+$ allows uppercase or lowercase alphabetical characters, spaces, periods, underscores, and dashes only.")
+"^ asserts that the regular expression must match at the beginning of the subject [] is a character class - any character that matches inside this expression is allowed A-Z allows a range of uppercase characters a-z allows a range of lowercase characters . matches a period rather than a range of characters \s matches whitespace (spaces and tabs) _ matches an underscore - matches a dash (hyphen) + asserts that the preceding expression (in our case, the character class) must match one or more times $ Finally, this asserts that we're now at the end of the subject"
+
+print("[A-Za-z] matches uppercase and lowercase letters.")
+print("Matching regex groups: you can match by group number by ensuring each expressing is surrounded by () and then referecning by number \1 \2 \3.")
+print("The backreferences match EXACTLY what was captured by the referenced group, not the expression of the referenced group.")
+
+# backreference to failed group, or group that matched nothing.
+
+# what does this do...?
+# ^\d{2}(-?)\d{2}\1\d{2}\1\d{2}$
+# ^ start string
+# \d digit {2} twice
+# () capture group of - character ? between 0 and 1 of those
+# \d {2} 2 digits
+# \1 repeat group 1, which is (-?)
