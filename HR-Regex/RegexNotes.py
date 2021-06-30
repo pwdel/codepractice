@@ -102,3 +102,6 @@ print("Certain expressions might work differently in different environments.  Fo
 print("r'^[02468A-Za-z]{40}[13579\s]{5}$' # <-- did work in compiler, but not in Colab.")
 
 # Matching {x, y} Repetitions
+
+print("This pattern was solved immediately: Regex_Pattern = r'^\d{1,2}[A-Za-z]{3,}\W{0,3}$'")
+print("Keep in mind that, {0,3} can represent a range of characters from 0 to n characters.")
