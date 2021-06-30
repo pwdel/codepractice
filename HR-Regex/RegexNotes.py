@@ -117,3 +117,5 @@ print("+ is equivalent to {1,}")
 print("Used Regex_Pattern = r'^[A-Za-z]*s$' - the * helps match the last character. How?")
 print("* Causes the resulting RE to match 0 or more repetitions of the preceding RE, as many repetitions as are possible. ab* will match ‘a’, ‘ab’, or ‘a’ followed by any number of ‘b’s.")
 print("s$ shows that the last character will indeed be s ")
+
+# Alternative Matching
