@@ -105,3 +105,46 @@ print("r'^[02468A-Za-z]{40}[13579\s]{5}$' # <-- did work in compiler, but not in
 
 print("This pattern was solved immediately: Regex_Pattern = r'^\d{1,2}[A-Za-z]{3,}\W{0,3}$'")
 print("Keep in mind that, {0,3} can represent a range of characters from 0 to n characters.")
+
+# Multiple Repetitions
+
+print("{0,} can be used to indicate, 0 or more.")
+print("+ can be used to indicate, 1 or more.")
+print("+ is equivalent to {1,}")
+
+# Matching Ending Items
+
+print("Used Regex_Pattern = r'^[A-Za-z]*s$' - the * helps match the last character. How?")
+print("* Causes the resulting RE to match 0 or more repetitions of the preceding RE, as many repetitions as are possible. ab* will match ‘a’, ‘ab’, or ‘a’ followed by any number of ‘b’s.")
+print("s$ shows that the last character will indeed be s ")
+
+# Alternative Matching
+
+print("the | can be used as an, 'or' expression.")
+print("Regex_Pattern = r'^((Mr\.)|(Mrs\.)|(Ms\.)|(Dr\.)|(Er\.)){1}[a-zA-Z]+$'' # <-- does not work in Colab, but works in compiler.")
+print("Why?")
+print("The group (Mr\.) takes care of Mr. and each subsequent term in the overall group (A|B|C), alternating or statements.")
+print("The \. character... Regular expressions use the backslash character (\) to indicate special forms or to allow special characters to be used without invoking their special meaning.")
+print("So basically \ just allows you to literally capture the . character without . meaning, matching any character except newline.")
+
+# Word Boundaries
+
+print("Word boundaries seem to be able to be more powerful than ^ and $ as they can start at any arbitrary character.")
+print("Notes: if the start point was a vowel, it's important to group: ([aeiouAEIOU])")
+print(" further, [a-zA-Z\s]* as an optional, including the whitespace character helps obtain additional words.")
+
+# Capturing & Non-Capturing Groups
+
+print("(?:) can be used to create a non-capturing group.")
+print("Matches whatever regular expression is inside the parentheses, but the substring matched by the group cannot be retrieved after performing a match or referenced later in the pattern.")
+print("This seems to mean that we can reference the group by number with \1 and it will reference the expression rather than the exact substring.")
+
+# backreferences
+
+print("backreferences for regex can't be done in python")
+
+# forward references
+
+print("forward references for regex can't be done in python")
+
+# positive lookahead
