@@ -95,3 +95,13 @@ print("The backreferences match EXACTLY what was captured by the referenced grou
 # () capture group of - character ? between 0 and 1 of those
 # \d {2} 2 digits
 # \1 repeat group 1, which is (-?)
+
+# repeating expressions
+
+print("Certain expressions might work differently in different environments.  For example:")
+print("r'^[02468A-Za-z]{40}[13579\s]{5}$' # <-- did work in compiler, but not in Colab.")
+
+# Matching {x, y} Repetitions
+
+print("This pattern was solved immediately: Regex_Pattern = r'^\d{1,2}[A-Za-z]{3,}\W{0,3}$'")
+print("Keep in mind that, {0,3} can represent a range of characters from 0 to n characters.")
