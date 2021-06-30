@@ -119,3 +119,10 @@ print("* Causes the resulting RE to match 0 or more repetitions of the preceding
 print("s$ shows that the last character will indeed be s ")
 
 # Alternative Matching
+
+print("the | can be used as an, 'or' expression.")
+print("Regex_Pattern = r'^((Mr\.)|(Mrs\.)|(Ms\.)|(Dr\.)|(Er\.)){1}[a-zA-Z]+$'' # <-- does not work in Colab, but works in compiler.")
+print("Why?")
+print("The group (Mr\.) takes care of Mr. and each subsequent term in the overall group (A|B|C), alternating or statements.")
+print("The \. character... Regular expressions use the backslash character (\) to indicate special forms or to allow special characters to be used without invoking their special meaning.")
+print("So basically \ just allows you to literally capture the . character without . meaning, matching any character except newline.")
