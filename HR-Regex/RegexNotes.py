@@ -126,3 +126,25 @@ print("Why?")
 print("The group (Mr\.) takes care of Mr. and each subsequent term in the overall group (A|B|C), alternating or statements.")
 print("The \. character... Regular expressions use the backslash character (\) to indicate special forms or to allow special characters to be used without invoking their special meaning.")
 print("So basically \ just allows you to literally capture the . character without . meaning, matching any character except newline.")
+
+# Word Boundaries
+
+print("Word boundaries seem to be able to be more powerful than ^ and $ as they can start at any arbitrary character.")
+print("Notes: if the start point was a vowel, it's important to group: ([aeiouAEIOU])")
+print(" further, [a-zA-Z\s]* as an optional, including the whitespace character helps obtain additional words.")
+
+# Capturing & Non-Capturing Groups
+
+print("(?:) can be used to create a non-capturing group.")
+print("Matches whatever regular expression is inside the parentheses, but the substring matched by the group cannot be retrieved after performing a match or referenced later in the pattern.")
+print("This seems to mean that we can reference the group by number with \1 and it will reference the expression rather than the exact substring.")
+
+# backreferences
+
+print("backreferences for regex can't be done in python")
+
+# forward references
+
+print("forward references for regex can't be done in python")
+
+# positive lookahead
