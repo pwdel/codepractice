@@ -105,3 +105,15 @@ print("r'^[02468A-Za-z]{40}[13579\s]{5}$' # <-- did work in compiler, but not in
 
 print("This pattern was solved immediately: Regex_Pattern = r'^\d{1,2}[A-Za-z]{3,}\W{0,3}$'")
 print("Keep in mind that, {0,3} can represent a range of characters from 0 to n characters.")
+
+# Multiple Repetitions
+
+print("{0,} can be used to indicate, 0 or more.")
+print("+ can be used to indicate, 1 or more.")
+print("+ is equivalent to {1,}")
+
+# Matching Ending Items
+
+print("Used Regex_Pattern = r'^[A-Za-z]*s$' - the * helps match the last character. How?")
+print("* Causes the resulting RE to match 0 or more repetitions of the preceding RE, as many repetitions as are possible. ab* will match ‘a’, ‘ab’, or ‘a’ followed by any number of ‘b’s.")
+print("s$ shows that the last character will indeed be s ")
