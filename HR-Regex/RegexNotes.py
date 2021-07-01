@@ -133,6 +133,21 @@ print("Word boundaries seem to be able to be more powerful than ^ and $ as they 
 print("Notes: if the start point was a vowel, it's important to group: ([aeiouAEIOU])")
 print(" further, [a-zA-Z\s]* as an optional, including the whitespace character helps obtain additional words.")
 
+print("\b Matches the empty string, but only at the beginning or end of a word.")
+print("A word is defined as a sequence of word characters.")
+print("Note that formally, \b is defined as the boundary between a \w and a \W character (or vice versa)"t())
+print("...or between \w and the beginning/end of the string.")
+
+print("This means that r'\bfoo\b' matches 'foo', 'foo.', '(foo)', 'bar foo baz' but not 'foobar' or 'foo3'.")
+
+# escapes in general:
+
+# Most of the standard escapes supported by Python string literals are also accepted by the regular expression parser:
+
+# \a      \b      \f      \n
+# \N      \r      \t      \u
+# \U      \v      \x      \\
+
 # Capturing & Non-Capturing Groups
 
 print("(?:) can be used to create a non-capturing group.")
@@ -148,3 +163,48 @@ print("backreferences for regex can't be done in python")
 print("forward references for regex can't be done in python")
 
 # positive lookahead
+
+print("(?=...) Matches if ... matches next, but doesn’t consume any of the string. ")
+
+print("The positive lookahead (?=) asserts regex_1 to be immediately followed by regex_2")
+
+print("?= Matches if ... matches next, but doesn’t consume any of the string.")
+print("For example, Isaac (?=Asimov) will match 'Isaac ' only if it’s followed by 'Asimov'.")
+print("Just be careful about what you are looking to match and what is preceding, don't mix the two up!")
+
+# negative lookahead
+
+print("The negative lookahead (?!) asserts regex_1 not to be immediately followed by regex_2.")
+
+print("(?!...) ")
+print("Matches if ... doesn’t match next. This is a negative lookahead assertion. For example, Isaac (?!Asimov) will match 'Isaac ' only if it’s not followed by 'Asimov'.")
+
+# Positive Lookbehind
+
+print("(?<=...) Matches if the current position in the string is preceded by a match for ... that ends at the current position.")
+print("(?<=)")
+print("The positive lookbehind (?<=) asserts regex_1 to be immediately preceded by regex_2.")
+print("(?<=...)")
+print("Matches if the current position in the string is preceded by a match for ... that ends at the current position.")
+print("this example looks for a word following abc by using ?<=abc ")
+print(">>> m = re.search('(?<=abc)def', 'abcdef'")
+print(">>> m.group(0)")
+print(">>> 'def' ")
+print("This example looks for a word following a hyphen:")
+print(">>> m = re.search(r'(?<=-)\w+', 'spam-egg')")
+print(">>> m.group(0)")
+print(">>> 'egg'")
+
+print("--------------------------------------------------------------------------------")
+print("--------------------------------------------------------------------------------")
+# python regex documentation
+
+print("re.findall(pattern, string, flags=0)")
+print("Return all non-overlapping matches of pattern in string, as a list of strings.")
+print("The string is scanned left-to-right, and matches are returned in the order found.")
+print("If one or more groups are present in the pattern, return a list of groups; ")
+print("this will be a list of tuples if the pattern has more than one group. Empty matches are included in the result.")
+
+print("--------------------------------------------------------------------------------")
+re.search(pattern, string, flags=0)
+Scan through string looking for the first location where the regular expression pattern produces a match, and return a corresponding match object. Return None if no position in the string matches the pattern; note that this is different from finding a zero-length match at some point in the string.
