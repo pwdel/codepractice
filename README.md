@@ -8,11 +8,11 @@ Code practice from various platforms.
 
 ## HackerRank
 
-* Algorithms
+* [Algorithms](https://github.com/pwdel/codepractice/tree/main/HR-Algorithms)
 * Databases
-* Data Structures
+* [Data Structures](https://github.com/pwdel/codepractice/tree/main/HR-DataStructures)
 * Linux Shell
-* Python
-* Regex
+* [Python](https://github.com/pwdel/codepractice/tree/main/HR-Python)
+* [Regex](https://github.com/pwdel/codepractice/tree/main/HR-Regex)
 * SQL
 * Functional Programming
