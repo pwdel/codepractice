@@ -1,4 +1,3 @@
-# https://www.hackerrank.com/challenges/html-attributes/problem
 
 # a map function and map object:
 # function - map() passes each item of the iterable to this function.
