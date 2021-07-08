@@ -14,7 +14,7 @@ import random
 import re
 import sys
 import time
-import datetime as dt
+import datetime
 
 # fmt = '%a %d %b %Y %H:%M:%S %z'
 # for i in range(int(input())):
@@ -26,13 +26,27 @@ def time_delta(t1, t2):
     # convert t1 and t2 to postfix time
     # format https://docs.python.org/3/library/datetime.html
     # Fri 01 May 2015 13:54:36 -0000
-    # datetime.datetime(2012,4,1,0,0).timestamp()
+
     # t1p = time.mktime(datetime.datetime.strptime(t1, "%d/%m/%Y").timetuple())
-    datetime.datetime(2012,4,1,0,0).timestamp()
+    fmt = '%a %d %b %Y %H:%M:%S %z'
 
-    diff = t1p-t2p
+    # print("t1p is: ",t1p)
+    t1_p = datetime.datetime.strptime(t1, fmt)
+    t2_p = datetime.datetime.strptime(t2, fmt)
 
-    return(diff)
+    # format time difference in days, strip off days and multiply by seconds
+    thedays = (t1_p - t2_p).days*24*3600
+    # strip off seconds, same
+    thesecs = (t1_p - t2_p).seconds
+
+    # absolute value of both combined
+    dayssecs = abs(thedays+thesecs)
+
+    # turn into string
+    dayssecsstr = str(dayssecs)
+
+    return(dayssecsstr)
+
 
 if __name__ == '__main__':
     fptr = open(os.environ['OUTPUT_PATH'], 'w')
