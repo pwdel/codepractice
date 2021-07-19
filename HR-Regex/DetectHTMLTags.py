@@ -25,8 +25,13 @@ for i in range(0,len(stringlist)):
     # search for item
     m = re.search(regex_epression, currentitem)
     # put group item into variable
-    groupitem = str(m.group(0))
-    # add group 0 to foundexpressions list
-    foundexpressions.append(groupitem)
+    groupitem = m.group(0)
+    # print(groupitem)
+
+    # need to do an if statement for only if object found
+    # else, don't append. Can't add a nonetype object.
+    if groupitem != None:
+        # add group 0 to foundexpressions list
+        foundexpressions.append(groupitem)
 
 print(foundexpressions)
