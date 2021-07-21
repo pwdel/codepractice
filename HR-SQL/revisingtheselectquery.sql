@@ -45,6 +45,29 @@ FROM STATION
 WHERE (ID%2) = 0;
 
 
+-- Find the difference between the total number of CITY entries in the table and the number of distinct CITY entries in the table.
+
+-- select outer function
+-- select ( X - Y ) as total_count
+-- this will give us a total-count, difference between X and Y
+select
+  (
+      -- SELECT all with COUNT(*) <-- measure of all values
+    SELECT
+      COUNT(*)
+    from
+      STATION
+  ) - (
+      -- SELECT individuals with COUNT(DISTINCT COL)
+    SELECT
+      COUNT(DISTINCT CITY)
+    from
+      STATION
+  ) as total_count
+
+
+
+
 -- Query the Name of any student in STUDENTS who scored higher than 75 Marks.
 -- Order your output by the last three characters of each name.
 -- If two or more students both have names ending in the same last three characters (i.e.: Bobby, Robby, etc.), secondary sort them by ascending ID.
