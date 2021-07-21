@@ -45,21 +45,22 @@ FROM STATION
 WHERE (ID%2) = 0;
 
 
+-- Query the Name of any student in STUDENTS who scored higher than 75 Marks.
+-- Order your output by the last three characters of each name.
+-- If two or more students both have names ending in the same last three characters (i.e.: Bobby, Robby, etc.), secondary sort them by ascending ID.
 
--- Query the Name of any student in STUDENTS who scored higher than
--- Marks. Order your output by the last three characters of each name.
--- If two or more students both have names ending in the same last
--- three characters (i.e.: Bobby, Robby, etc.),
--- secondary sort them by ascending ID.
--- Note - https://www.w3schools.com/sql/func_sqlserver_char.asp
--- char
+-- Note - you can get the right three characters:
+-- https://www.w3schools.com/sql/trysqlserver.asp?filename=trysql_func_sqlserver_right
 
+-- Note - ORDER BY works with multiple columns
+-- https://www.w3schools.com/sql/sql_orderby.asp
 
 SELECT NAME
 FROM STUDENTS
 WHERE MARKS > 75
---
-ORDER BY NAME ASC;
+-- get last three characters in name using RIGHT(COL,NUMCHAR)
+-- ORDER BY works with multiple columns, use name first, then ID
+ORDER BY RIGHT(NAME, 3), ID ASC;
 
 -- Write a query that prints a list of employee names (i.e.: the name attribute) from the Employee table in alphabetical order.
 -- note you can use operation ORDER BY, ASC, DESC
