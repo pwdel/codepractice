@@ -21,9 +21,9 @@
 // entries() - html/page based, displays array items for (let x of f) {document.getElementById("demo").innerHTML += x;}
 // every() array.every(myFunction) function checkAge(age) {return age > N;} // returns True/False
 // fill() - html/page based, document.getElementById("demo").innerHTML = array.fill("Kiwi"); - fills array with all "Kiwi"
-// filter()
+// filter() - filter according to function with operator. array.filter(filterfunction)
 // findIndex()
-// forEach()
+// forEach() - list each item in an array. array.forEach(myFunction(item,index));
 // from
 // pop array.pop();   // Removes last element in array
 
