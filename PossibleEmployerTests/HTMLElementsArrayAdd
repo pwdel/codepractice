@@ -1,9 +1,0 @@
-Welcome to your Publica assessment. Try and solve the two problems to the best of your abilities. Focus first on solving the problem, then focus on optimization for speed and code cleanliness and organization. Please feel free to add comments to your code to explain your approach to solving the problem. There are two coding problems and the third "problem" is a feedback question so don't rush to finish the first two problems. Not all test cases are displayed by Coderbyte. So make sure edge cases are covered and the problem is completed before submitting since Coderbyte will not allow you to return to a problem once it is submitted.
-
-Note: When running the final test to check for correctness, remove all console.logs you have created (not the initial console log since that is used by the test to check for correctness) or the test will not pass!
-Note: When running the final test to check for correctness, remove all console.logs you have created (not the initial console log since that is used by the test to check for correctness) or the test will not pass!
-Good luck,
-
-Publica Engineering Team
-
-Feedback: How did you feel about these problems? Were they too hard, too easy? Was there anything that felt unfair or potentially misleading?
