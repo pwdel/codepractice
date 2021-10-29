@@ -14,11 +14,16 @@ $ pwd
 
 > /var/challenges/oops_cwd
 
-####
+#### https://oops.cmdchallenge.com/#/oops_list_files
 
 > List all of the files on a single line, in the current working directory.
 > Hint: You won't be able to use the ls command, instead you will need to use a bash builtin
 
-$ /var/challenges/oops_cwd/*
+```
+echo "$(< m*)"
+```
 
->
+
+
+#### https://oops.cmdchallenge.com/#/oops_print_file_contents
+
