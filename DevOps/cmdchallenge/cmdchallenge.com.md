@@ -79,14 +79,178 @@ $ cat access.log | grep "GET"
 
 > Print all files in the current directory, one per line (not the path, just the filename) that contain the string "500".
 
-* First off, "grep 500 *" will quickly filter out lines from every single file that include, "500" in it.  This command would be similar to, "ls | xargs cat | grep 500"
-*
-
-ls |xargs -I _  grep -l 500 _
-
+```
 grep 500 * | cut -d':' -f1 | uniq
+```
+
+* First off, "grep 500 *" will quickly filter out lines from every single file that include, "500" in it.  This command would be similar to, "ls | xargs cat | grep 500"
+* cut prints selected parts of lines from each FILE to standard output.
+* cut -d DELIM uses the specified delimitor DELIM, other than the default tab as a delimiter to seperate parts of the file, so in this case, ':' is the delimitor, with : being the string.
+* cut -f1 refers to field 1, basically only selecting this field.
+* uniq filters adjacent matching lines from INPUT (or standard input),
+writing to OUTPUT (or standard output).
+
+0. So doing an ls, we see that we get multiple different files.
+
+* cat'ing one of those files, you get a lot of lines of data. So how do you actually filter out, "500" from these three files with so much data in it?
+
+```
+access.log
+access.log.1
+access.log.2
+```
+
+1. So first, by, "grep 500 *" we grab everything with 500 in it:
+
+```
+access.log:69.16.40.148 - - [09/Jan/2017:22:34:33 +0100] "GET /pages/create HTTP/1.0" 500 3471
+access.log:225.219.54.140 - - [09/Jan/2017:22:35:30 +0100] "GET /posts/foo?appID=xxxx HTTP/1.0" 500 2477
+access.log.1:2.71.250.27 - - [09/Jan/2017:22:41:26 +0100] "GET /pages/create HTTP/1.0" 500 2477
+```
+2. Then doing, a cut with delimiter -d ':' on the first field (the access.log) this gives us those filenames again, but this time it's not from the ls function, but rather from delimiting the output of the options from the previous command, and specifically within that first field, f1:
+
+```
+access.log
+access.log
+access.log.1
+```
+
+3. Run 'uniq' ... this simply eliminates all repeats. So in the above output, we see that access.log is printed twice. uniq just shows the two unique files.
+
+#### https://cmdchallenge.com/#/search_for_files_by_extension
+
+> Print the relative file paths, one path per line for all filenames that start with "access.log" in the current directory.
+
+Basically a cheat for this is to just do, "ls" because all of the filenames have, "access.log" in the directory.
+
+However if you wanted to be more explicit, you could do: "ls | grep access.log"
+
+#### https://cmdchallenge.com/#/search_for_string_in_files_recursive
+
+> Print all matching lines (without the filename or the file path) in all files under the current directory that start with "access.log" that contain the string "500".
+> Note that there are no files named access.log in the current directory, you will need to search recursively.
+
+Doing, "find . 'access.log'" will show literally everything that has acccess.log in it, recursively:
+
+```
+.
+./var
+./var/log
+./var/log/httpd
+./var/log/httpd/access.log
+./var/log/httpd/access.log.1
+./var/log/httpd/access.log.2
+find: 'access.log': No such file or directory
+```
+
+So, you can grep that out:
+
+```
+find . 'access.log' | grep access.log
+
+./var/log/httpd/access.log
+./var/log/httpd/access.log.1
+./var/log/httpd/access.log.2
+```
+But now we're faced with three non-unique solutions, yet they are all in the same directory. Also, we have not sorted for, "500" yet:
+
+```
+find -name 'access.log' | grep -rh 500
+```
+
+* grep -r is --directories=recurse --- look through all directories.
+
+This would print out:
+
+```
+access.log:69.16.40.148 - - [09/Jan/2017:22:34:33 +0100] "GET /pages/create HTTP/1.0" 500 3471
+access.log:225.219.54.140 - - [09/Jan/2017:22:35:30 +0100] "GET /posts/foo?appID=xxxx HTTP/1.0" 500 2477
+access.log.1:2.71.250.27 - - [09/Jan/2017:22:41:26 +0100] "GET /pages/create HTTP/1.0" 500 2477
+```
+
+* grep -h gets rid of the prefixes on the filenames.
+
+So if we do:
+
+
+```
+find -name 'access.log' | grep -rh 404
+
+101.163.230.250 - - [09/Jan/2017:22:52:31 +0100] "DELETE /posts/2/display HTTP/1.0" 404 2477
+151.84.119.34 - - [09/Jan/2017:22:47:51 +0100] "GET /posts/1/display HTTP/1.0" 404 3471
+12.135.14.52 - - [09/Jan/2017:22:35:28 +0100] "GET /pages/create HTTP/1.0" 404 3471
+225.210.137.169 - - [09/Jan/2017:22:57:17 +0100] "POST /posts/foo?appID=xxxx HTTP/1.0" 404 1083
+
+find . 'access.log' | grep -r 404
+
+var/log/httpd/access.log:101.163.230.250 - - [09/Jan/2017:22:52:31 +0100] "DELETE /posts/2/display HTTP/1.0" 404 2477
+var/log/httpd/access.log.1:151.84.119.34 - - [09/Jan/2017:22:47:51 +0100] "GET /posts/1/display HTTP/1.0" 404 3471
+var/log/httpd/access.log.2:12.135.14.52 - - [09/Jan/2017:22:35:28 +0100] "GET /pages/create HTTP/1.0" 404 3471
+var/log/httpd/access.log.2:225.210.137.169 - - [09/Jan/2017:22:57:17 +0100] "POST /posts/foo?appID=xxxx HTTP/1.0" 404 1083
+
+```
+
+Observe that the file directory prefix is still visible without the -h flag.
+
+Hence:
+
+```
+find -name 'access.log' | grep -rh 500
+```
+#### https://cmdchallenge.com/#/extract_ip_addresses
+
+> Extract all IP addresses from files that start with "access.log" printing one IP address per line.
+
+First off, there may be multiple files with a similar name here, so do a greedy search:
+
+```
+find . -name 'access.log*'
+
+./var/log/httpd/access.log
+./var/log/httpd/access.log.1
+```
+The * being, "greedy."
+
+If we pipe this output to xargs and cat it, we get a big long print out of lines...
+
+```
+find . -name 'access.log*' | xargs cat
+
+163.56.115.58 - - [09/Jan/2017:22:29:57 +0100] "GET /posts/2/display HTTP/1.0" 200 3240
+75.113.188.234 - - [09/Jan/2017:22:30:43 +0100] "GET /posts/foo?appID=xxxx HTTP/1.0" 200 1116
+69.16.40.148 - - [09/Jan/2017:22:34:33 +0100] "GET /pages/create HTTP/1.0" 500 3471
+225.219.54.140 - - [09/Jan/2017:22:35:30 +0100] "GET /posts/foo?appID=xxxx HTTP/1.0" 500 2477
+207.243.19.2 - - [09/Jan/2017:22:38:03 +0100] "GET /bar/create HTTP/1.0" 200 1116
+
+...
+```
+Within that, the first field shows a long list of ip addresses.
+
+```
+find . -name 'access.log*' | xargs cat | cut -d '-' -f1
+
+163.56.115.58 
+75.113.188.234 
+69.16.40.148 
+225.219.54.140 
+207.243.19.2 
+199.37.62.156 
+...
+
+```
+
+The interpreter did not exactly accept this answer, so looking at the answer, we see that the space was the delimitor rather than the '-' symbol.
+
+```
+find . -name "access.log*" | xargs cat | cut -d " " -f 1
+```
+
+#### https://cmdchallenge.com/#/count_files
+
+> Count the number of files in the current working directory. Print the number of files as a single integer.
 
 
 ##### Breakdown
 
 [Pipe |](https://linuxhint.com/linux-pipe-command-examples/)
+
