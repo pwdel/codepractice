@@ -249,6 +249,96 @@ find . -name "access.log*" | xargs cat | cut -d " " -f 1
 
 > Count the number of files in the current working directory. Print the number of files as a single integer.
 
+* the command, "wc" with option, "l" counts the number of new lines.
+* If we wanted to generalize this solution, we could do, "ls -F" which grabs all files and directories, and appends a "/" at the end for any that are directories, as well as files, in case there are files and directories that have the same name.
+* Doing, "wc -l" would count the number of lines, assuming you filtered out with, "grep -v" which is inverting the match against, "/" or whatever character.
+
+```
+ls -F | grep -v / | wc -l
+```
+However, if we do this, we don't get every single file, perhaps because we didn't search for hidden files.
+
+* If we search with, "ls -R" this gives another entry, ".:" ... 
+* "." is used for, "current directory
+* ":" is used to seperate host's path from the container's path...source:destination.
+* .: seems to mean, "current directory, host:container.
+
+So it appears that the valid answer is:
+
+```
+ls -R | wc -l
+```
+
+Though it is not clear why this is the valid answer.
+
+#### https://cmdchallenge.com/#/simple_sort
+
+> Print the contents of access.log sorted.
+
+* We can sort using the, "sort" command.
+* Since we already know access.log is the filename, we can just do, "ls" and then "sort", understanding that access.log is the only file.
+* We could explicitly specify, "sort access.log" since we know the file ahead of time.
+* If we just wanted to sort, "any file in the directory" we could do, "sort *"
+* If we wanted to filter by files, we could use the above methodology, "ls -F | grep -v / " and then sort the output of all with, "sort *"
+
+```
+ls -F | grep -v / | sort *
+```
+#### https://cmdchallenge.com/#/count_string_in_line
+
+> Print the number of lines in access.log that contain the string "GET".
+
+Again, knowing access.log ahead of time is helpful here, we can simply grep the term, "GET" and then do "wc -l" which counts the newlines remaining out of those filtered for GET.
+
+```
+cat access.log | grep GET | wc -l
+```
+#### https://cmdchallenge.com/#/split_on_a_char
+
+* We can use the, "replace/filter" command, "sed"
+* The syntax we use is, "sed [commandstring] [file]"
+
+* The command string uses a flag, of which there are several, and then / as a character to seperate the various things being done according to that command string.
+
+* For example, "s" is used to indicate, "seperate".  Breaking down our command:
+
+* s/;/\n/g
+
+* The, "s" means seperate.
+* / character connects the next character
+* ; is what we are seperating
+* \n is what we are replacing it with (newline)
+* /g refers to, "global"
+
+Hence:
+
+```
+sed 's/;/\n/g' split-me.txt 
+```
+
+#### https://cmdchallenge.com/#/print_number_sequence
+
+> Print the numbers 1 to 100 separated by spaces.
+
+There are a few main ways to do this:
+
+* echo {1..100}
+
+This simply echos a range of integers from 1 to 100.
+
+The above could also be accomplished line by line by counting and echo'ing the $i variable as shown:
+
+```
+for i in {1..10}; do echo $i; done
+```
+
+This can also be done using the sequence command:
+
+* seq -s ' ' 100
+* echo $(seq 1 100)
+
+#### https://cmdchallenge.com/#/replace_text_in_files
+
 
 ##### Breakdown
 
