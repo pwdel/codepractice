@@ -339,6 +339,60 @@ This can also be done using the sequence command:
 
 #### https://cmdchallenge.com/#/replace_text_in_files
 
+* SED is a stream editor and can do lots of functions on files such as: searching, find and replace, insertion, deletion.
+* This is commonly a substitute for find or replace.
+* You can edit files without opening them.
+* Much quicker than using VI/VIM/Nano, etc.
+
+* "sed -i" is used to edit files in place.
+* sed -i[SUFFIX] makses a backup if SUFFIX is supplied.
+* sed -i 's/old-text/new-text/g' input.txt
+* So if we have a file called, "helloworld.txt" with the line, "hi there world" and we want to repalce, "world" with "earth" we do:
+
+```
+sed -i 's/world/earth/g' helloworld.txt
+```
+
+So in this situation, we have several txt files and directories, so we need some kind of greedy, recusrive match.
+
+> The wildcard * matches any file or directory (whose name doesn't start with .) in the current directory.
+> ** may be equivalent to *; it could match zero or more characters followed by zero or more characters, which is the same as matching zero or more characters just once.
+> But with some shells, with some settings, ** is a recursive version of *, matching all files and directories in the current directory and subdirectories.
+
+So if we create another file, "fine.txt" and enter the line, "fine how are you" and then do a cat with that recursive wildcard, we get:
+
+```
+# cat *
+oh hello how are you
+hi there earth
+```
+Where basically we're cat'ing out every file in the entire directory. Similarly if we use, "cat *txt"
+
+Hence, if we want to look in subdirectories, we can start out by making a subdirectory, test/ with a file, "ok.txt" in which we enter the line, "cool dude" - thereby allowing the command cat **/*txt to spit out the contents of anything within subdirectories and ending with txt.
+
+```
+cat **/*txt
+cool dude
+```
+
+hence:
+
+```
+sed -i  's/challenges are difficult//g' **/*.txt
+```
+Will take anything with the expression, "challenges are difficult" and just eliminate it from any of the files in the subdirectories under the main folder.
+
+#### https://cmdchallenge.com/#/sum_all_numbers
+
+> The file sum-me.txt has a list of numbers, one per line. Print the sum of these numbers.
+
+
+
+Hence:
+
+```
+awk '{n=n+$0}END{print n}' sum-me.txt
+```
 
 ##### Breakdown
 

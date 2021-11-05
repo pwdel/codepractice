@@ -1,5 +1,6 @@
 # School of SRE
 
+* [School of SRE - Linkedin Link](https://linkedin.github.io/school-of-sre/)
 ## About Linux
 ### New things learned about linux:
 
@@ -38,6 +39,14 @@ usr | This directory is used to store application programs on the system
 
 * Note - the "usr" file is more like, "Applications" in MacOS. On a webserver this might be where var/www is placed.
 * /home/ is more like the /home directory in MacOS, with perhaps Documents, Downloads or other files stored here.
+
+
+### Multi-User Operating Systems
+
+* Whenever multiple users can log in and not affect one another's filesystems or preferences, it's multi-user.
+* Server administration is mostly concerned with servers that are physically distant from our physical selves.
+#### Group Management
+
 
 
 # Point Left Off At
