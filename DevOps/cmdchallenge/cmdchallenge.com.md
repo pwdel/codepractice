@@ -386,13 +386,111 @@ Will take anything with the expression, "challenges are difficult" and just elim
 
 > The file sum-me.txt has a list of numbers, one per line. Print the sum of these numbers.
 
+* [Using Awk - Geeks for Geeks](https://www.geeksforgeeks.org/awk-command-unixlinux-examples/)
 
+What we can do with AWK:
 
-Hence:
+* Scan files line by line.
+* Splits each input line into fields.
+* Compare input line/fields to a pattern.
+* Perform actions on matched lines.
+
+This is useful for:
+
+* Transforming data files
+* Producing formatted reports
+
+Includes programming constructs:
+
+* Formatting output lines
+* Arithmetic and string operations
+* Conditionals and loops
+
+So if we start off by looking at the file:
 
 ```
-awk '{n=n+$0}END{print n}' sum-me.txt
+cat sum-me.txt
+1
+2
+3
+5
+7
+11
+13
 ```
+It's exactly as described, one number per line.
+
+The default behavior of awk is simply to just print every line, the same as cat would.
+
+```
+awk '{print}' sum-me.txt
+1
+2
+3
+5
+7
+11
+13
+```
+...an equivalent command would be to print out the, "first row," of whatever is within the file, or:
+
+"awk '{print $1}' sum-me.txt" which basically uses $1 to specify the first tab delimited row.
+
+We can also count the number of lines in the file with:
+
+```
+awk 'END {print NR}' sum-me.txt
+7
+```
+Given that we know the number of lines is 7, and not a, "general number of lines" we can do a for loop and hold a variable, "sum" and continue printing out the cumulative sum on each line as we move to each line, denoted by $1 (the column number).
+
+```
+awk 'BEGIN{sum=0} {sum=sum+$1} {print sum}' sum-me.txt
+1
+3
+6
+11
+18
+29
+42
+```
+And if we want just the result at the end, without printing this out on every line, we add, "END" --
+```
+awk 'BEGIN{sum=0} {sum=sum+$1} END{print sum}' sum-me.txt
+42
+```
+#### https://cmdchallenge.com/#/just_the_files
+
+> Print all files in the current directory recursively without the leading directory path.
+
+First off, if we list recursively, we get everything:
+
+```
+ls -R
+.:
+2038
+beatae.flac
+error.doc
+libero.xls
+necessitatibus.doc
+totam
+./2038:
+01
+./2038/01:
+19
+./2038/01/19:
+animi.doc
+corporis.xls
+odit.doc
+
+```
+Investigating the files one by one, we see that the items with numbers are directories and the rest are files.
+
+```
+ls -R | if [[exist %1\* xargs]]; then echo "Yes"; fi 
+```
+
+
 
 ##### Breakdown
 
