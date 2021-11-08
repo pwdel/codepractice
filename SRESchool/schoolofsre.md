@@ -170,11 +170,46 @@ amit:x:1001:1001::/home/amit:/bin/sh
 
 ##### passwd
 
+```
+[root@5bbb45ed5b82 /]# passwd shivam
+Changing password for user shivam.
+
+[root@5bbb45ed5b82 /]# tail /etc/shadow | grep shivam
+shivam:$6$nVwJXfR.UlNAuks9$lXouOQs6tYAO5sTVH/dsqD6C5s2f2uObhsgI30jkYlhNIO89Eutn4alHkVVCYq/oBtIJ8u87TLBHj/vBGngCr0:18936:0:99999:7:::
+```
 
 ##### usermod
 
-
+```
+[root@5bbb45ed5b82 /]# usermod amit -s /bin/bash
+[root@5bbb45ed5b82 /]# tail /etc/passwd | grep amit
+amit:x:1001:1001::/home/amit:/bin/bash
+```
 ##### userdel
+
+```
+[root@5bbb45ed5b82 /]# userdel amit
+[root@5bbb45ed5b82 /]# tail /etc/passwd | grep amit
+[root@5bbb45ed5b82 /]# 
+```
+#### Managing Groups
+
+* groupadd\(groupname) - create a new group
+* groupdel\(groupname) - delete group
+* gpasswd\(groupname) - modifies password for group
+
+#### Superuser SU
+
+```
+su shivam
+[root@5bbb45ed5b82 /]# su shivam
+[shivam@5bbb45ed5b82 /]$ whoami
+shivam
+[shivam@5bbb45ed5b82 /]$ tail /etc/shadow
+tail: cannot open '/etc/shadow' for reading: Permission denied
+```
+* Only root can open /etc/shadow.
+
 
 # Point Left Off At
 
