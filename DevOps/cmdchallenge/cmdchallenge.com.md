@@ -386,14 +386,184 @@ Will take anything with the expression, "challenges are difficult" and just elim
 
 > The file sum-me.txt has a list of numbers, one per line. Print the sum of these numbers.
 
+* [Using Awk - Geeks for Geeks](https://www.geeksforgeeks.org/awk-command-unixlinux-examples/)
 
+What we can do with AWK:
 
-Hence:
+* Scan files line by line.
+* Splits each input line into fields.
+* Compare input line/fields to a pattern.
+* Perform actions on matched lines.
+
+This is useful for:
+
+* Transforming data files
+* Producing formatted reports
+
+Includes programming constructs:
+
+* Formatting output lines
+* Arithmetic and string operations
+* Conditionals and loops
+
+So if we start off by looking at the file:
 
 ```
-awk '{n=n+$0}END{print n}' sum-me.txt
+cat sum-me.txt
+1
+2
+3
+5
+7
+11
+13
+```
+It's exactly as described, one number per line.
+
+The default behavior of awk is simply to just print every line, the same as cat would.
+
+```
+awk '{print}' sum-me.txt
+1
+2
+3
+5
+7
+11
+13
+```
+...an equivalent command would be to print out the, "first row," of whatever is within the file, or:
+
+"awk '{print $1}' sum-me.txt" which basically uses $1 to specify the first tab delimited row.
+
+We can also count the number of lines in the file with:
+
+```
+awk 'END {print NR}' sum-me.txt
+7
+```
+Given that we know the number of lines is 7, and not a, "general number of lines" we can do a for loop and hold a variable, "sum" and continue printing out the cumulative sum on each line as we move to each line, denoted by $1 (the column number).
+
+```
+awk 'BEGIN{sum=0} {sum=sum+$1} {print sum}' sum-me.txt
+1
+3
+6
+11
+18
+29
+42
+```
+And if we want just the result at the end, without printing this out on every line, we add, "END" --
+```
+awk 'BEGIN{sum=0} {sum=sum+$1} END{print sum}' sum-me.txt
+42
+```
+#### https://cmdchallenge.com/#/just_the_files
+
+> Print all files in the current directory recursively without the leading directory path.
+
+First off, if we list recursively, we get everything:
+
+```
+ls -R
+.:
+2038
+beatae.flac
+error.doc
+libero.xls
+necessitatibus.doc
+totam
+./2038:
+01
+./2038/01:
+19
+./2038/01/19:
+animi.doc
+corporis.xls
+odit.doc
+
+```
+Howeever, we have to know apriori which one is a filename and which one is a directory prior to executing this code.
+
+If we do the following, then we get a list of files with leading directory structures:
+
+```
+find -type f
+./2038/01/19/animi.doc
+./2038/01/19/corporis.xls
+./2038/01/19/odit.doc
+./beatae.flac
+./error.doc
+./libero.xls
+./necessitatibus.doc
+./totam
+```
+To take those out, we need to filter with, printf '%f\n'
+
+* %f -> format specifier, removes floating point numbers
+* \n -> special characters, newline/linefeed
+
+```
+find -type f | -printf '%f\n'
+```
+However, this only works without the pipe, which I don't understand why that would be.  Looking at a more understandable command:
+
+```
+find -type f | sed 's/.*\///'
 ```
 
+* the, 'text to replace' is .*\/ which is basically, "anything" between . and including the character "/", which we are using the escape character \ to specify.
+* Then we're replacing it with, "" which is nothing, as specified between the next / and /.
+
+#### https://cmdchallenge.com/#/remove_extensions_from_files
+
+> Rename all files removing the extension from them in the current directory recursively.
+
+So first we can list off everything in the folder:
+
+```
+ls -R
+.:
+2038
+beatae.flac
+error.doc
+libero.xls
+necessitatibus.doc
+totam
+./2038:
+01
+./2038/01:
+19
+./2038/01/19:
+animi.doc
+corporis.xls
+odit.doc
+```
+Then just the files:
+
+```
+find -type f
+./2038/01/19/animi.doc
+./2038/01/19/corporis.xls
+./2038/01/19/odit.doc
+./beatae.flac
+./error.doc
+./libero.xls
+./necessitatibus.doc
+./totam
+```
+Then we can pipe those results into a, "sed" and replace the extension of each file.
+
+```
+find -type f | sed 's/*.//'
+```
+However what the above does is just eliminates everything.
+
+```
+find -type f | sed 's/\..*//'
+```
+Working with different permutations of sed, we get the same result, where the entire file is eliminated.
 ##### Breakdown
 
 [Pipe |](https://linuxhint.com/linux-pipe-command-examples/)
