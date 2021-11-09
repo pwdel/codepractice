@@ -484,14 +484,86 @@ corporis.xls
 odit.doc
 
 ```
-Investigating the files one by one, we see that the items with numbers are directories and the rest are files.
+Howeever, we have to know apriori which one is a filename and which one is a directory prior to executing this code.
+
+If we do the following, then we get a list of files with leading directory structures:
 
 ```
-ls -R | if [[exist %1\* xargs]]; then echo "Yes"; fi 
+find -type f
+./2038/01/19/animi.doc
+./2038/01/19/corporis.xls
+./2038/01/19/odit.doc
+./beatae.flac
+./error.doc
+./libero.xls
+./necessitatibus.doc
+./totam
+```
+To take those out, we need to filter with, printf '%f\n'
+
+* %f -> format specifier, removes floating point numbers
+* \n -> special characters, newline/linefeed
+
+```
+find -type f | -printf '%f\n'
+```
+However, this only works without the pipe, which I don't understand why that would be.  Looking at a more understandable command:
+
+```
+find -type f | sed 's/.*\///'
 ```
 
+* the, 'text to replace' is .*\/ which is basically, "anything" between . and including the character "/", which we are using the escape character \ to specify.
+* Then we're replacing it with, "" which is nothing, as specified between the next / and /.
 
+#### https://cmdchallenge.com/#/remove_extensions_from_files
 
+> Rename all files removing the extension from them in the current directory recursively.
+
+So first we can list off everything in the folder:
+
+```
+ls -R
+.:
+2038
+beatae.flac
+error.doc
+libero.xls
+necessitatibus.doc
+totam
+./2038:
+01
+./2038/01:
+19
+./2038/01/19:
+animi.doc
+corporis.xls
+odit.doc
+```
+Then just the files:
+
+```
+find -type f
+./2038/01/19/animi.doc
+./2038/01/19/corporis.xls
+./2038/01/19/odit.doc
+./beatae.flac
+./error.doc
+./libero.xls
+./necessitatibus.doc
+./totam
+```
+Then we can pipe those results into a, "sed" and replace the extension of each file.
+
+```
+find -type f | sed 's/*.//'
+```
+However what the above does is just eliminates everything.
+
+```
+find -type f | sed 's/\..*//'
+```
+Working with different permutations of sed, we get the same result, where the entire file is eliminated.
 ##### Breakdown
 
 [Pipe |](https://linuxhint.com/linux-pipe-command-examples/)
