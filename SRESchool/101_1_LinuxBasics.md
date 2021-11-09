@@ -555,7 +555,47 @@ du: cannot read directory './var/db/sudo': Permission denied
 
 #### Systemd
 
+* service manager for linux.
+* Systemd units are the building blocks of systemd
+* the below are unit configuration files available at /usr/lib/systemd/system which are distributed by installed RPM packages.
+
+```
+[shivam@5bbb45ed5b82 /]$ cd usr/lib/systemd/system
+[shivam@5bbb45ed5b82 system]$ pwd
+/usr/lib/systemd/system
+[shivam@5bbb45ed5b82 system]$ ls | head
+autovt@.service
+basic.target
+basic.target.wants
+bluetooth.target
+boot-complete.target
+console-getty.service
+container-getty@.service
+ctrl-alt-del.target
+dbus-org.freedesktop.hostname1.service
+dbus-org.freedesktop.locale1.service
+```
+
 #### Managing System Services
+
+* systemctl start name.service	Starts a service
+* systemctl stop name.service	Stops a service
+* systemctl restart name.service	Restarts a service
+* systemctl status name.service	Check the status of a service
+* systemctl reload name.service	Reload the configuration of a service
 
 #### Logs
 
+* Looking at, "cat /var/log/*" literally shows every single action on the machine, installation-wise.
+
+Evidently it also contains:
+
+* /var/log/* - system errors, booting/shutdown, configuration changes, etc.
+
+* /var/log/authlog - contains system authorization related logs.
+
+* /var/log/laslog - contains the recent login information of all users.
+
+Kernel Logs - not permitted as a part of linux for the user to view or work with kernal commands.  This literally prints the message buffer of the terminal, including device commands.
+
+It is possible to access this by changing settings.
