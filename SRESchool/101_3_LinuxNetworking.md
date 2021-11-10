@@ -246,3 +246,33 @@ Escape character is '^]'.
 * TCP guarantees reliable delivery by using sequence numbers.
 * A TCP connection is established by a three-way handshake. "Are you there? -> Yes! -> OK great!"
 
+### Routing and Data Link Layer
+
+Start out by installing net-tools to be able to do routing.
+
+```
+apt-get install net-tools
+
+[root@5bbb45ed5b82 temp]# route -n
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+0.0.0.0         172.17.0.1      0.0.0.0         UG    0      0        0 eth0
+172.17.0.0      0.0.0.0         255.255.0.0     U     0      0        0 eth0
+
+```
+
+* The Destination is bitwise AND'ed with the Genmask.
+* If the result is destination part of the table then that gateway and interface is picked for routing.
+
+For example:
+
+* (108.174.10.10)AND(255.255.255.0) = 108.173.10.0
+* This doesn't match any destination in the routing table.
+
+(the rest of the explination here is not very good and gets confusing)
+
+Notes:
+
+Generally the routing table is populated by DHCP and playing around is not a good practice. There can be reasons where one has to play around the routing table but take that path only when it's absolutely necessary
+Understanding error messages better like, “No route to host” error can mean mac address of the destination host is not found and it can mean the destination host is down
+On rare cases looking at the ARP table can help us understand if there is a IP conflict where same IP is assigned to two hosts by mistake and this is causing unexpected behavior
