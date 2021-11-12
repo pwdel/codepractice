@@ -998,13 +998,93 @@ awk 's[$1]++{print $1}' a*
 
 > Print all matching lines (without the filename or the file path) in all files under the current directory that start with "access.log", where the next line contains the string "404". Note that you will need to search recursively.
 
+First, taking a recursive look at our file structure:
+
 ```
-awk '/404/{print f}{f=$0}' **/a*
+ls -R
+
+.:
+var
+./var:
+log
+./var/log:
+httpd
+./var/log/httpd:
+access.log
+access.log.1
+access.log.2
+```
+
+* Once again, awk is a programming language.
+
+The following prints out everything from the file structure which matches the term /access.log and any pattern afterward.
+
+```
+awk '{print f}' **/access.log*
+```
+So if we add, f=$0, this will print out the entire line.
+
+```
+awk '{print f}{f=$0}' **/a*
+...
+163.56.115.58 - - [09/Jan/2017:22:29:57 +0100] "GET /posts/2/display HTTP/1.0" 200 3240
+75.113.188.234 - - [09/Jan/2017:22:30:43 +0100] "GET /posts/foo?appID=xxxx HTTP/1.0" 200 1116
+69.16.40.148 - - [09/Jan/2017:22:34:33 +0100] "GET /pages/create HTTP/1.0" 500 3471
+225.219.54.140 - - [09/Jan/2017:22:35:30 +0100] "GET /posts/foo?appID=xxxx HTTP/1.0" 500 2477
+```
+Whereas {f=1} would print out the first column, with the ip addresses.
+
+We can operate across the entire line on everything that has a 200 on the next line, with:
+
+```
+awk '/200/{print f}{f=$0}' **/access.log*
+163.56.115.58 - - [09/Jan/2017:22:29:57 +0100] "GET /posts/2/display HTTP/1.0" 200 3240
+225.219.54.140 - - [09/Jan/2017:22:35:30 +0100] "GET /posts/foo?appID=xxxx HTTP/1.0" 500 2477
+207.243.19.2 - - [09/Jan/2017:22:38:03 +0100] "GET /bar/create HTTP/1.0" 200 1116
+```
+Similarly, we can find every line that has a 200 within it:
+
+```
+awk '200 {print f}{f=$0}' **/access.log*
+```
+So to do this with a 404, on the next line we do:
+```
+awk '/404/{print f}{f=$0}' **/access.log*
 ```
 
 #### https://cmdchallenge.com/#/print_files_if_different
 
 > Print all files with a .bin extension in the current directory that are different than the file named base.bin.
+
+First, we can just look at the files in the folder:
+
+```
+base.bin
+file1.txt
+file2.txt
+test1.bin
+test2.bin
+test3.bin
+test4.bin
+test5.bin
+test6.bin
+test7.bin
+```
+We can do a for loop, and print, "hello" for every file in t*
+
+```
+for f in t*; do echo "hello"; done
+hello
+hello
+hello
+hello
+hello
+hello
+hello
+```
+This is using the, "f in t*; do", which counts the files that start with t, showing it to be 7, which corresponds to above. However if we do all files, "for f in *; do ..." we will see 10 counts for the entire 10 files.
+
+We can now use this f also as a variable in a following function with the $f decorator filled in, so $f will be equal to test1.bin, test2.bin, test3.bin, etc. as we move forward throughout the list.
 
 ```
 for f in t*; do cmp -s bas* $f ||echo $f; done
