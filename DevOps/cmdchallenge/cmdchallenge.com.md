@@ -1086,17 +1086,169 @@ This is using the, "f in t*; do", which counts the files that start with t, show
 
 We can now use this f also as a variable in a following function with the $f decorator filled in, so $f will be equal to test1.bin, test2.bin, test3.bin, etc. as we move forward throughout the list.
 
+Meanwhile, the function, "cmp -s" compares two files, byte by byte. So for example if we do the following, we get a result:
+
 ```
-for f in t*; do cmp -s bas* $f ||echo $f; done
+cmp base.bin file1.txt
+base.bin file1.txt differ: char 1, line 1
+
+cmp -l base.bin file1.txt
+cmp: EOF on file1.txt after byte 18
+ 1 130 124
+ 2  53 150
+ 3 362 151
+ 4 104 163
+ 5 214  40
+ 6   1 151
+ 7 276 163
+ 8 225  40
+ 9 374 152
+10 264 165
+11  66 156
+12 373 153
+13 334  40
+14 272 146
+15 300 151
+16  40 154
+17 324 145
+18  46  56
 ```
+This is a sort of, "diff" between two different files.
+
+So comparing each file to base.bin would be:
+
+```
+for f in t*; do cmp base.bin $f; done
+base.bin test2.bin differ: char 20, line 1
+base.bin test4.bin differ: char 57, line 1
+base.bin test5.bin differ: char 71, line 1
+base.bin test7.bin differ: char 27, line 1
+```
+But we need to print out the file names, not the differences, so we do:
+
+```
+for f in t*; do cmp -s base.bin $f | echo $f; done
+
+test1.bin
+test2.bin
+test3.bin
+test4.bin
+test5.bin
+test6.bin
+test7.bin
+```
+Strangly however, we just get a result showing all of the files, rather than the 4 files we had found above.
+
+The double pipe gives us the answer we are looking for. Why is that? What is the double pipe doing?
+
+* If the status of the first command, "cmp -s base.bin $f" is not zero, then do the second command, "echo $f. So basically, for each line that we get an answer, we echo the $f, and for each line there's no answer, nothing happens.
+* Whereas with the single pipe, it's just printing out $f every time.
+* If we had used && rather than || we would have printed out all of the opposite answers, because the second command only executes if the first command reports nothing.
+
+```
+for f in t*; do cmp -s base.bin $f || echo $f; done
+
+test2.bin
+test4.bin
+test5.bin
+test7.bin
+```
+
 
 #### https://cmdchallenge.com/#/nested_dirs
 
 > There is a file: ./.../ /. .the flag.txt   Show its contents on the screen.
 
-```
+* In this situation, we have to search the entire filesystem to get something to show up.
+
+So first starting out:
 
 ```
+find / -name *.txt
+
+/usr/share/doc/mount/mount.txt
+/usr/share/perl/5.26.1/Unicode/Collate/allkeys.txt
+/usr/share/perl/5.26.1/Unicode/Collate/keys.txt
+/usr/share/perl/5.26.1/unicore/Blocks.txt
+/usr/share/perl/5.26.1/unicore/NamedSequences.txt
+...
+
+```
+We get a huge number of responses. Filtering this down:
+
+```
+find / -name *.txt | grep flag
+
+/var/challenges/nested_dirs/.../  /. .the flag.txt
+```
+So if we try to cat the xargs:
+
+```
+find / -name *.txt | grep flag | xargs cat
+
+cat: /var/challenges/nested_dirs/.../: Is a directory
+cat: /.: Is a directory
+cat: .the: No such file or directory
+cat: flag.txt: No such file or directory
+``
+So somehow the directory is not being handed to us in such a way that we can print it out as an xargs, it's being given in a parsed manner.
+
+A better way to operate on the result would be to use find's -exec [command] {} + option, which runs a command on the specified file, which is similar to how xargs works.
+
+```
+find / -name "*flag.txt" -exec cat {};
+
+find: missing argument to `-exec'
+```
+
+However as we can see, we are missing an argument, which we can just use, "\" which seems to mean, the file in question.
+
+```
+find / -name "*flag.txt" -exec cat {} \;
+
+you got it!
+```
+
+#### https://cmdchallenge.com/#/find_tabs_in_a_file
+
+> How many lines contain tab characters in the file named file-with-tabs.txt in the current directory.
+
+```
+sed '/\t/!d' * |wc -l
+```
+
+#### https://cmdchallenge.com/#/remove_files_without_extension
+
+> There are files in this challenge with different file extensions. Remove all files without the .txt and .exe extensions recursively in the current working directory.
+
+```
+find -type f ! -regex '.*\(exe\|txt\)$' -delete
+```
+
+#### https://cmdchallenge.com/#/remove_files_with_a_dash
+
+> There are some files in this directory that start with a dash in the filename. Remove those files.
+
+```
+find -type f ! -regex '.*\(exe\|txt\)$' -delete
+```
+
+#### https://cmdchallenge.com/#/print_sorted_by_key
+
+> There are two files in this directory, ps-ef1 and ps-ef2. Print the contents of both files sorted by PID and delete repeated lines.
+
+```
+sort -unk2 *
+```
+#### https://cmdchallenge.com/#/IPv4_listening_ports
+
+> In the current directory there is a file called netstat.out. Print all the IPv4 listening ports sorted from the higher to lower.
+
+```
+grep tcp netstat.out|grep -i listen|grep -v tcp6|awk '{print$4}' |awk -F: '{print $2}'|sort -rn
+```
+
+
 
 
 ##### Breakdown
