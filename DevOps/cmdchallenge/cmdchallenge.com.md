@@ -564,6 +564,693 @@ However what the above does is just eliminates everything.
 find -type f | sed 's/\..*//'
 ```
 Working with different permutations of sed, we get the same result, where the entire file is eliminated.
+
+Note...there is a specific command, "rename" which can be used with a filtering function to rename all files recursively.
+
+```
+rename 's/\..*//' **/*
+```
+* 's/.../' is the overall string
+* **/* means, "within this directory, recursively.
+* the \. is an escape character which looks for .
+* .* tells us to do greedy search on anything after the .
+* // <- shows to replace that end extension with nothing
+
+### https://cmdchallenge.com/#/replace_spaces_in_filenames
+
+> The files in this challenge contain spaces. List all of the files (filenames only) in the current directory but replace all spaces with a '.' character.
+
+If we try the following with a regex:
+
+```
+rename 's/ /./' **/* 
+```
+We see that the search **/* finds nothing.
+
+Using the command, "tr" we can do something a bit easier. "tr" is simply, translate or delete characters.
+
+```
+ls | tr ' ' '.'
+```
+
+### https://cmdchallenge.com/#/dirs_containing_files_with_extension
+
+> In this challenge there are some directories containing files with different extensions. Print all directories, one per line without duplicates that contain one or more files with a ".tf" extension.
+
+So first off, doing an, "ls" shows that there are two directories, so doing an ls -R:
+
+```
+.:
+bin
+terraform
+./bin:
+dostuff.sh
+./terraform:
+main.tf
+modules
+./terraform/modules:
+load_balancer
+virtual_machine
+vpn
+./terraform/modules/load_balancer:
+main.tf
+./terraform/modules/virtual_machine:
+main.tf
+outputs.tf
+./terraform/modules/vpn:
+files
+main.tf
+templates
+./terraform/modules/vpn/files:
+bootstrap.sh
+./terraform/modules/vpn/templates:
+config.template
+```
+In order to look at the end extension, we could do a sed.
+
+```
+
+ls -R | sed 's/.tf//' 
+```
+This does take the tf off of all of the files with the tf extension, but it also shows all of our other outputs:
+
+```
+.:
+bin
+terraform
+./bin:
+dostuff.sh
+./terraform:
+main
+modules
+./terraform/modules:
+load_balancer
+virtual_machine
+vpn
+./terraform/modules/load_balancer:
+main
+./terraform/modules/virtual_machine:
+main
+outputs
+./terraform/modules/vpn:
+files
+main
+templates
+./terraform/modules/vpn/files:
+bootstrap.sh
+./terraform/modules/vpn/templates:
+config.template
+```
+* Somehow we have to identify the files which have .tf within the extension before passing onto the next step.
+
+So if we do:
+
+```
+ls -R | grep tf
+main.tf
+main.tf
+main.tf
+outputs.tf
+main.tf
+```
+So passing this output to sed:
+
+```
+ls -R | grep tf | sed 's/.tf//'
+
+main
+main
+main
+outputs
+main
+```
+However, we are also asked to disclude duplicates.
+
+```
+ls -R | grep tf | sed 's/.tf//' | sort -u
+main
+outputs
+```
+Note that the specification was asking for *directories which contain* the file with the specified extension, not the actual file extension. Hence we need to use a recursive search with, "dirname" and **/* and pipe that result to uniq (or sort -u)
+
+```
+dirname **/*tf | uniq
+
+terraform
+terraform/modules/load_balancer
+terraform/modules/virtual_machine
+terraform/modules/vpn
+```
+
+### https://cmdchallenge.com/#/files_starting_with_a_number
+
+> There are a mix of files in this directory that start with letters and numbers. Print the filenames (just the filenames) of all files that start with a number recursively in the current directory.
+
+* First off, we're looking for the "current directory," which means using "ls" rather than, "ls -R"
+* We're searching for alphanumerics, so we can use a regex and [0-9]
+* We're starting at the start of the string, so we can use an anchor match ^
+
+```
+ls | grep ^[0-9]
+
+001dir
+04Carrie Alexander
+132Rebecca Rubio
+25Brandon Mcdonald
+293Linda Bennett
+335John Joseph
+388Andrew Carter
+402Nancy Henson
+42Robert Hill
+436Teresa Owens
+477Thomas Pierce MD
+48Thomas Allen
+511Tammy Welch
+540Katherine Jones
+593Brett Martin
+639Charles Ferguson
+670James Jacobs
+682Terri Jones
+737Jeffrey Davis
+757Robert Marquez
+778Holly Archer
+78Michelle Spencer
+974Michael Bowman
+```
+* In the above result, we can see that 001dir is included, which is actually a directory, whereas we are looking for the files.
+
+There are many ways of filtering for just files, but one method is perhaps the most elegantly typed:
+
+```
+ls -p | grep -v /
+```
+So we could take that and add on our previous grep to filter further by number.
+
+```
+ls -p | grep -v / | grep ^[0-9]
+04Carrie Alexander
+132Rebecca Rubio
+25Brandon Mcdonald
+293Linda Bennett
+335John Joseph
+388Andrew Carter
+402Nancy Henson
+42Robert Hill
+436Teresa Owens
+477Thomas Pierce MD
+48Thomas Allen
+511Tammy Welch
+540Katherine Jones
+593Brett Martin
+639Charles Ferguson
+670James Jacobs
+682Terri Jones
+737Jeffrey Davis
+757Robert Marquez
+778Holly Archer
+78Michelle Spencer
+974Michael Bowman
+```
+However, this leaves out a few files. Instead running file with a grep of the 0-9 regex, we get:
+
+```
+find -type f -printf "%f\n" | grep ^[0-9]
+
+```
+
+* Running, "find -type f" will find the filenames and print everything out, including the ./ directory structure. There are multiple different options in place of, "f" which are possible including directories, links, sockets, etc.
+* -printf is an option of find, "print formatted" which has its own set of options, including %f
+* %f indicates any leading directories removed, the "./" stuff
+* \n is newline
+
+#### https://cmdchallenge.com/#/print_nth_line
+
+> Print the 25th line of the file faces.txt
+
+* sed is sort of like cat, sed being a stream editor and cat being a concatenator, we're treating the file like a stream.
+* -n means silent for sed
+* -e shows an expression or script to be taken in, with the next argument being said expression
+* 25p means, "print the current pattern space, 25" which indicates the number of lines. [from this detailed documentation](https://man7.org/linux/man-pages/man1/sed.1.html)
+
+```
+sed -n -e 25p faces.txt
+```
+
+#### https://cmdchallenge.com/#/reverse_readme
+
+> Print the lines of the file reverse-me.txt in this directory in reverse line order so that the last line is printed first and the first line is printed last.
+
+Using sed, we might have something along the lines of:
+
+```
+sed -n -e r reverse-me.txt
+```
+However, "r" is not an option for -e.
+
+There's a cleverly named, "tac" command which is, "cat in reverse."  So, we can simply cat the file, and then pipe it to tac.
+
+```
+cat reverse-me.txt | tac
+```
+#### https://cmdchallenge.com/#/remove_duplicate_lines
+
+> Print the file faces.txt, but only print the first instance of each duplicate line, even if the duplicates don't appear next to each other. Note that order matters so don't sort the lines before removing duplicates.
+
+It's fairly clear that we should use awk on this challenge. For detailed documentation we look [here](https://man7.org/linux/man-pages/man1/awk.1p.html).
+
+* sed is a stream editor, it works on streams of characters on a per-line basis and includes a primitive programming language that includes loops and conditionals. There are only, "two variables," the pattern space and the hold space. Script readibility is tougher, math operations are awkward.
+* awk is oriented towards fields on a line-by-line basis, it has much more robust programming constructs including if/else, while, do/while, and for for C-style array iteration. There is complete support for variables and single-dimension arrays. Math operations resemble C. There are other variations of awk including mawk and nawk.
+* sed is used for patterns in text, it's kind of more of a regex thing.
+* awk is used for the text that looks more like rows and columns.
+
+In this instance, the faces are in rows, so awk is probably the best approach.
+
+* Awk, being more of a programming language, is the one with BEGIN and END and puts commands in between {}.
+* Awk also uses the $1, $2, fields to look at columns, with the -F field seperator option.
+
+Finding duplicates:
+
+```
+awk 'c[$0]++; c[$0]==2' faces.txt
+```
+This prints out uniqe lines, line by line. How?
+
+* c is a variable, we iterate it with ++
+* we're using column 0, [$0]
+* if we count at least c==2, then print it out, filter it out
+
+So if we run this into unique:
+
+```
+awk 'c[$0]++; c[$0]==2' faces.txt | uniq
+(◕‿◕)
+٩◔̯◔۶
+(¬_¬)
+¯\_(ツ)_/¯
+ヽ༼ຈل͜ຈ༽ﾉ
+(︺︹︺)
+```
+But this is not the right answer. There is a simplier implementation:
+
+```
+awk '!c[$0]++' faces.txt
+(◕‿◕)
+(^̮^)
+ʘ‿ʘ
+ಠ_ಠ
+ಠ⌣ಠ
+ಠ‿ಠ
+(ʘ‿ʘ)
+(ಠ_ಠ)
+¯\_(ツ)_/¯
+(ಠ⌣ಠ
+ಠಠ⌣ಠ)
+```
+Note that ! prior to the c.
+
+
+#### https://cmdchallenge.com/#/find_primes
+
+> The file random-numbers.txt contains a list of 100 random integers. Print the number of unique prime numbers contained in the file.
+
+We can print out the number of unique numbers with:
+
+```
+cat random-numbers.txt | sort -u | wc -l
+```
+Of course, this is not the number of primes. While we can't put together a formula to discover primes, we can put together a formula to evaluate whether a number is a prime, below a particular value. So first off we could find the maximum within that above output.
+
+```
+cat random-numbers.txt | sort -u | sort -n
+
+32119
+```
+The highest number then is, "32119" - so we could find the primes below this number. Of course the list is of fixed length as well, so knowing that number may not even be valuable.
+
+It turns out that there is a command, "factor" which factors out numbers:
+
+```
+factor 20
+2 2 5
+```
+So starting out with our sort -u command:
+
+```
+sort -u *
+
+...
+
+```
+Gives us all of the unique numbers, sorted by the first digits.
+
+Factoring these gives us:
+
+```
+sort -u * | factor
+
+10148: 2 2 43 59
+10403: 101 103
+1053: 3 3 3 3 13
+10546: 2 5273
+10596: 2 2 3 883
+10969: 7 1567
+11744: 2 2 2 2 2 367
+
+...
+
+```
+So if there is more than one factor result, it's not a prime for example, the prime, "31667: 31667" shows only itself as a factor.
+
+Hence, if we can use awk to filter out any result that has more than one factor shown, these will be the primes:
+
+```
+sort -u *|factor|awk 'NF==2'
+
+12379: 12379
+14411: 14411
+20897: 20897
+21397: 21397
+24533: 24533
+24631: 24631
+25537: 25537
+30197: 30197
+31667: 31667
+32119: 32119
+3697: 3697
+7103: 7103
+
+```
+So to count these up, just add, "wc -l"
+
+#### https://cmdchallenge.com/#/print_common_lines
+
+> access.log.1 and access.log.2 are http server logs. Print the IP addresses common to both files, one per line.
+
+Taking a look at the files:
+
+```
+cat access.log.1
+
+108.68.174.15 - - [09/Jan/2017:22:32:19 +0100] "GET /foo/create HTTP/1.0" 200 2477
+17.2.20.139 - - [09/Jan/2017:22:33:48 +0100] "GET /posts/foo?appID=xxxx HTTP/1.0" 200 2477
+28.151.137.59 - - [09/Jan/2017:22:37:57 +0100] "GET /foo/create HTTP/1.0" 200 1116
+199.150.241.179 - - [09/Jan/2017:22:38:34 +0100] "GET /bar/create HTTP/1.0" 200 3240
+2.71.250.27 - - [09/Jan/2017:22:41:26 +0100] "GET /pages/create HTTP/1.0" 500 2477
+17.137.186.194 - - [09/Jan/2017:22:43:17 +0100] "GET /pages/create HTTP/1.0" 200 1116
+151.84.119.34 - - [09/Jan/2017:22:47:51 +0100] "GET /posts/1/display HTTP/1.0" 404 3471
+4.180.204.195 - - [09/Jan/2017:22:49:53 +0100] "GET /foo/create HTTP/1.0" 502 1116
+9.230.96.54 - - [09/Jan/2017:22:52:58 +0100] "GET /bar/create HTTP/1.0" 200 1116
+157.143.233.21 - - [09/Jan/2017:22:53:50 +0100] "GET /posts/foo?appID=xxxx HTTP/1.0" 502 1083
+
+cat access.log.2
+
+89.148.148.238 - - [09/Jan/2017:22:33:09 +0100] "GET /posts/1/display HTTP/1.0" 502 2477
+12.135.14.52 - - [09/Jan/2017:22:35:28 +0100] "GET /pages/create HTTP/1.0" 404 3471
+81.196.171.245 - - [09/Jan/2017:22:37:53 +0100] "GET /posts/2/display HTTP/1.0" 200 2497
+202.141.16.141 - - [09/Jan/2017:22:42:48 +0100] "GET /pages/create HTTP/1.0" 200 2477
+132.202.73.71 - - [09/Jan/2017:22:45:23 +0100] "PUT /posts/foo?appID=xxxx HTTP/1.0" 200 2497
+89.169.186.129 - - [09/Jan/2017:22:49:29 +0100] "POST /pages/create HTTP/1.0" 200 1116
+17.137.186.194 - - [09/Jan/2017:22:53:54 +0100] "GET /posts/foo?appID=xxxx HTTP/1.0" 200 3471
+2.71.250.27 - - [09/Jan/2017:22:57:17 +0100] "POST /posts/foo?appID=xxxx HTTP/1.0" 404 1083
+28.151.137.59 - - [09/Jan/2017:23:00:50 +0100] "GET /foo/create HTTP/1.0" 502 3471
+108.68.174.15 - - [09/Jan/2017:23:03:35 +0100] "GET /posts/1/display HTTP/1.0" 200 2497
+
+```
+* So first off, this is tabular formatted data, so the first instinct is to use awk.
+
+If you want to treat the contents of both files as one, you use the * marker, like so:
+
+```
+cat access.log.*
+```
+So with awk, you can run the command on the filespace, "access.log.*"
+
+```
+awk 's[$1]++{print $1}' a*
+17.137.186.194
+2.71.250.27
+28.151.137.59
+108.68.174.15
+```
+* the s variable operates on column 1, iterating and printing anything new on row $1.
+
+#### https://cmdchallenge.com/#/print_line_before
+
+> Print all matching lines (without the filename or the file path) in all files under the current directory that start with "access.log", where the next line contains the string "404". Note that you will need to search recursively.
+
+First, taking a recursive look at our file structure:
+
+```
+ls -R
+
+.:
+var
+./var:
+log
+./var/log:
+httpd
+./var/log/httpd:
+access.log
+access.log.1
+access.log.2
+```
+
+* Once again, awk is a programming language.
+
+The following prints out everything from the file structure which matches the term /access.log and any pattern afterward.
+
+```
+awk '{print f}' **/access.log*
+```
+So if we add, f=$0, this will print out the entire line.
+
+```
+awk '{print f}{f=$0}' **/a*
+...
+163.56.115.58 - - [09/Jan/2017:22:29:57 +0100] "GET /posts/2/display HTTP/1.0" 200 3240
+75.113.188.234 - - [09/Jan/2017:22:30:43 +0100] "GET /posts/foo?appID=xxxx HTTP/1.0" 200 1116
+69.16.40.148 - - [09/Jan/2017:22:34:33 +0100] "GET /pages/create HTTP/1.0" 500 3471
+225.219.54.140 - - [09/Jan/2017:22:35:30 +0100] "GET /posts/foo?appID=xxxx HTTP/1.0" 500 2477
+```
+Whereas {f=1} would print out the first column, with the ip addresses.
+
+We can operate across the entire line on everything that has a 200 on the next line, with:
+
+```
+awk '/200/{print f}{f=$0}' **/access.log*
+163.56.115.58 - - [09/Jan/2017:22:29:57 +0100] "GET /posts/2/display HTTP/1.0" 200 3240
+225.219.54.140 - - [09/Jan/2017:22:35:30 +0100] "GET /posts/foo?appID=xxxx HTTP/1.0" 500 2477
+207.243.19.2 - - [09/Jan/2017:22:38:03 +0100] "GET /bar/create HTTP/1.0" 200 1116
+```
+Similarly, we can find every line that has a 200 within it:
+
+```
+awk '200 {print f}{f=$0}' **/access.log*
+```
+So to do this with a 404, on the next line we do:
+```
+awk '/404/{print f}{f=$0}' **/access.log*
+```
+
+#### https://cmdchallenge.com/#/print_files_if_different
+
+> Print all files with a .bin extension in the current directory that are different than the file named base.bin.
+
+First, we can just look at the files in the folder:
+
+```
+base.bin
+file1.txt
+file2.txt
+test1.bin
+test2.bin
+test3.bin
+test4.bin
+test5.bin
+test6.bin
+test7.bin
+```
+We can do a for loop, and print, "hello" for every file in t*
+
+```
+for f in t*; do echo "hello"; done
+hello
+hello
+hello
+hello
+hello
+hello
+hello
+```
+This is using the, "f in t*; do", which counts the files that start with t, showing it to be 7, which corresponds to above. However if we do all files, "for f in *; do ..." we will see 10 counts for the entire 10 files.
+
+We can now use this f also as a variable in a following function with the $f decorator filled in, so $f will be equal to test1.bin, test2.bin, test3.bin, etc. as we move forward throughout the list.
+
+Meanwhile, the function, "cmp -s" compares two files, byte by byte. So for example if we do the following, we get a result:
+
+```
+cmp base.bin file1.txt
+base.bin file1.txt differ: char 1, line 1
+
+cmp -l base.bin file1.txt
+cmp: EOF on file1.txt after byte 18
+ 1 130 124
+ 2  53 150
+ 3 362 151
+ 4 104 163
+ 5 214  40
+ 6   1 151
+ 7 276 163
+ 8 225  40
+ 9 374 152
+10 264 165
+11  66 156
+12 373 153
+13 334  40
+14 272 146
+15 300 151
+16  40 154
+17 324 145
+18  46  56
+```
+This is a sort of, "diff" between two different files.
+
+So comparing each file to base.bin would be:
+
+```
+for f in t*; do cmp base.bin $f; done
+base.bin test2.bin differ: char 20, line 1
+base.bin test4.bin differ: char 57, line 1
+base.bin test5.bin differ: char 71, line 1
+base.bin test7.bin differ: char 27, line 1
+```
+But we need to print out the file names, not the differences, so we do:
+
+```
+for f in t*; do cmp -s base.bin $f | echo $f; done
+
+test1.bin
+test2.bin
+test3.bin
+test4.bin
+test5.bin
+test6.bin
+test7.bin
+```
+Strangly however, we just get a result showing all of the files, rather than the 4 files we had found above.
+
+The double pipe gives us the answer we are looking for. Why is that? What is the double pipe doing?
+
+* If the status of the first command, "cmp -s base.bin $f" is not zero, then do the second command, "echo $f. So basically, for each line that we get an answer, we echo the $f, and for each line there's no answer, nothing happens.
+* Whereas with the single pipe, it's just printing out $f every time.
+* If we had used && rather than || we would have printed out all of the opposite answers, because the second command only executes if the first command reports nothing.
+
+```
+for f in t*; do cmp -s base.bin $f || echo $f; done
+
+test2.bin
+test4.bin
+test5.bin
+test7.bin
+```
+
+
+#### https://cmdchallenge.com/#/nested_dirs
+
+> There is a file: ./.../ /. .the flag.txt   Show its contents on the screen.
+
+* In this situation, we have to search the entire filesystem to get something to show up.
+
+So first starting out:
+
+```
+find / -name *.txt
+
+/usr/share/doc/mount/mount.txt
+/usr/share/perl/5.26.1/Unicode/Collate/allkeys.txt
+/usr/share/perl/5.26.1/Unicode/Collate/keys.txt
+/usr/share/perl/5.26.1/unicore/Blocks.txt
+/usr/share/perl/5.26.1/unicore/NamedSequences.txt
+...
+
+```
+We get a huge number of responses. Filtering this down:
+
+```
+find / -name *.txt | grep flag
+
+/var/challenges/nested_dirs/.../  /. .the flag.txt
+```
+So if we try to cat the xargs:
+
+```
+find / -name *.txt | grep flag | xargs cat
+
+cat: /var/challenges/nested_dirs/.../: Is a directory
+cat: /.: Is a directory
+cat: .the: No such file or directory
+cat: flag.txt: No such file or directory
+``
+So somehow the directory is not being handed to us in such a way that we can print it out as an xargs, it's being given in a parsed manner.
+
+A better way to operate on the result would be to use find's -exec [command] {} + option, which runs a command on the specified file, which is similar to how xargs works.
+
+```
+find / -name "*flag.txt" -exec cat {};
+
+find: missing argument to `-exec'
+```
+
+However as we can see, we are missing an argument, which we can just use, "\" which seems to mean, the file in question.
+
+```
+find / -name "*flag.txt" -exec cat {} \;
+
+you got it!
+```
+
+#### https://cmdchallenge.com/#/find_tabs_in_a_file
+
+> How many lines contain tab characters in the file named file-with-tabs.txt in the current directory.
+
+```
+sed '/\t/!d' * |wc -l
+```
+
+#### https://cmdchallenge.com/#/remove_files_without_extension
+
+> There are files in this challenge with different file extensions. Remove all files without the .txt and .exe extensions recursively in the current working directory.
+
+```
+find -type f ! -regex '.*\(exe\|txt\)$' -delete
+```
+
+#### https://cmdchallenge.com/#/remove_files_with_a_dash
+
+> There are some files in this directory that start with a dash in the filename. Remove those files.
+
+```
+find -type f ! -regex '.*\(exe\|txt\)$' -delete
+```
+
+#### https://cmdchallenge.com/#/print_sorted_by_key
+
+> There are two files in this directory, ps-ef1 and ps-ef2. Print the contents of both files sorted by PID and delete repeated lines.
+
+```
+sort -unk2 *
+```
+#### https://cmdchallenge.com/#/IPv4_listening_ports
+
+> In the current directory there is a file called netstat.out. Print all the IPv4 listening ports sorted from the higher to lower.
+
+```
+grep tcp netstat.out|grep -i listen|grep -v tcp6|awk '{print$4}' |awk -F: '{print $2}'|sort -rn
+```
+
+
+
+
 ##### Breakdown
 
 [Pipe |](https://linuxhint.com/linux-pipe-command-examples/)
