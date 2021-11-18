@@ -106,4 +106,28 @@ Availabilty is expressed as a number of nines.
 * Murphy's kaw
 
 * MTTR - Mean time to Repair
-* MTBF
+* MTBF - Between Failures, Average Operational Time
+* MTTF - To Failures (Average Time Before Failure)
+* MTTD - Before Detected
+* MTTI - Before Investigated
+* MTRS - Before Service Restored
+* MTBSI - Between Service Incidents
+* Failure Rate
+
+#### Fault Tolerance - fault isolation terms.
+
+Systems should have a short circuit. In our imaginary system, if "notifications," is not working, the site should gracefully handle failure by removing the functionality instead of taking the whole site down.
+
+* "Swimlane," is a commonly used fault isolation methodology. Adds a barrier to the service from another service so that failure on either of them won't affect the other.
+
+Basically, "Swimlanes," are the dividing line. Different aspects of the service may be seperated not only by different silos within the microservices paradigm, but also by, "swimlanes," of organization, where storage, applications and load balancers may all live across different swimlanes.
+
+There are different approaches to swimlanes:
+
+1. Swimlane the Money Making Application. Never allow the cash register to be comprimised by ohter systems.
+2. Swimlane the biggest sources of incidents. Identify the recurring caues of pain and isolate them.
+3. Swimlane natural barriers, customer boundaries make good swim lanes (Public vs. Enterprise customers for example).
+
+## Conclusion
+
+Some of this may be over-engineering, but reducing bottlenecks and eliminating single points of failure, or introducing replicas are standard stuff.
