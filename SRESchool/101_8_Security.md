@@ -95,6 +95,19 @@ AES, being from the year 2000 is younger than DES, the older algorithm is more t
 
 * Digital Certificates - used for authentication.
 * PKI - higherarchical framework, CA (Certificate Authority) public or private, known, such as VeriSign, Entrust, or a private one within organization.
+
+* Syemtric key system - Alice put a secret message in a box and padlocks the box using a lock to which she has the key. Then sends the box to Bob through mail. When Bob gets the box, he uses an identical key to open the box and read the message.
+* Asymetric key systems - instead of opening the box when he recieves it, he adds his own lock to the box and returns the box to Alice, who users her key to remove her lock and returns the box to Bob, who uses his key to open the box.
+
+The critical advantage of Asymetric is that Alice (A) never needs to send their key out in the open to the reciever (B). Basically no key ever needs to be sent because of the back and fourth passing of the box.
+
+* Diffie-Hellman - two system parameters, g and p. Both are public and may be used by everybody. Math used, asymetric algorithm.
+
+* RSA - very flexible, variable key length, speed can be traded for the level of security 
+
+
+#### 
+
 ## Network Security
 
 ## Threats, Attacks, Defense
