@@ -102,13 +102,41 @@ AES, being from the year 2000 is younger than DES, the older algorithm is more t
 The critical advantage of Asymetric is that Alice (A) never needs to send their key out in the open to the reciever (B). Basically no key ever needs to be sent because of the back and fourth passing of the box.
 
 * Diffie-Hellman - two system parameters, g and p. Both are public and may be used by everybody. Math used, asymetric algorithm.
+#### Login Security
 
-* RSA - very flexible, variable key length, speed can be traded for the level of security 
+* SSH - know what it is already. Automatic encryption. Uses public key (Asymetric) encryption. It's not a shell, but rather a channel with end-to-end encryption. Can be configured with different cipher systems, including AES, Blowfish, 3DES, CAST128, and Arcfour.
 
+* Kerberos - network authentication protocol and the default authentication technology used by Microsoft Active Directory to authenticate to services within a LAN. Symetric-key cryptography and requires thid-party authentication to verify user identities.
 
-#### 
+* Certificate Chain - the first part of the OpenSSL command shows 3 certificates numberd 0, 1 and 2. This is the, "chain of trust." On a high level, each part of the chain of trust references the previous in one direction, while a verify signature is sent in the other direction. Three different certificates - End, Intermediate and Root.
+
+* TLS Handshake - client sends a HELLO, server says HELLO back, cipher suite supports key exchange, session key used to encrypt data sent through the connection. Basically both sides encrypt the data throughout the connection.
+
+* Perfect Forward Secrecy - should be called, "Forward Secrecy."  Non-emphemeral key exchange, client sends the pre-master key to the server by encrypting it with the server's public key.
 
 ## Network Security
+
+### Intro
+
+* TCP/IP is the dominant networking technology today, has five layers, Application, Transport (TCP), Network (IP), Data Link, Physical. OSI Network model used to represent non-TCP-IP technologies.
+
+* Application Layer - the interface between applications and network programs. Supports logins, file transfer, email, web browsing.
+* Presentation Layer - helps form data. Allows application layer programs residing on different side of a communication channel to understand the data, it's a translator.
+* Session layer is responsible for the connection.
+* Transport layer is responsible for providing reliable transport, packet sequencing, traffic control, latency, etc.
+* Network Layer is for routing data packets from one hop to the next hop.
+* Data-link is for data packets to device dependent data frames.
+* Physical layer - transmits device dependent frames through physical media.
+
+### Public Key Infrastructure
+
+* Public Key cryptography can be used to distribute keys.
+* Issue keys upon user requests, storethem, prevent from denying signatures, etc.
+
+### IPSec 
+
+* Major security protocol at the network layer.
+* 
 
 ## Threats, Attacks, Defense
 
