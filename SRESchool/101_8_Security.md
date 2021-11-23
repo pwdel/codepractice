@@ -362,6 +362,34 @@ netsniff-ng –i eth1 –o data.pcap
 
 * Border gateway protocol.
 * Autonomous system is a collection of routers or networks with the same network policy usually under single admin control.
+* BGP tells routers which hop to use in order to reach the destination network.
+* BGP is used for both communicating info among routers and externally.
+
+##### Vulnerabilities
+
+* Corrupting the BGP Routing table - hijacking
+* Injecting bogus route advertising.
+* There was a BGP attack on YouTube - Pakistan blocked YouTube by creaeting a BGP route that lead to a black hole. Millions were routed through a black hole to an ISP in Hong Kong.
+* Potentially, BGP occurs in DoS attack in which router is flooded with more packets than it can handle.
+
+##### Security
+
+* Use BGP authentication.
+* IPsec or BGP MD5
+
+#### Web-Based Attacks
+
+* I have gone through a good majority of web-based attacks with this project:
+
+https://github.com/pwdel/flasksecurity
+
+This included CSRF, XSRF, XSS, DOM, Clickjacking, etc. as well as database-based attacks and defense, having built them from scratch on Flask.
+#### VPN
+
+#### Security Breach
+
+#### Malicious Attacks
+
 
 
 ## Writing Secure Code
