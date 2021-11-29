@@ -386,10 +386,104 @@ https://github.com/pwdel/flasksecurity
 This included CSRF, XSRF, XSS, DOM, Clickjacking, etc. as well as database-based attacks and defense, having built them from scratch on Flask.
 #### VPN
 
+* Virtual Private Network - service that offers secure, reliable connection over shared public infrastructure.
+* Encryped private networks over a public network.
 #### Security Breach
 
+##### DOS
+
+* Despite agressive steps to prevent attacks, the attackers can still get through:
+
+* Denial of Service (DOS) - downtime or inability to use system.
+* Cordinated attempt by occupying a computer to perform large amounts of unnecessary tasks.
+* Logic, Flooding.
+
+* DDoS - Distributed Denial of Service Attack
+* Hundreds or even Thousands of Computers highjacked to perform attack.
+
+##### WireTapping
+
+* Attackers can tap data communication lines, even with internet.
+* Between the lines, does not alter the messages.
+* Piggyback - modifies the original message by breaking the communications and routing through a computer.
+
+##### Backdoors
+
+* Software dev's sometimes include hidden access methods, called backdoors, in their programs.
 #### Malicious Attacks
+##### Birthday Attacks
 
+* Comprimised hashed password file, mathematical exploit based upon birthday problem in probability theory.
+* The probability of a shared birthday exceeds 50% in a group of 23 people.
+##### Brute Force Password Attacks
 
+* Different passwords until one works.
+##### Dictionary Passwords
+
+* Relies on users making poor password choices, uses a dictionary of common passwords
+##### Replay Attacks
+
+* Involves capturing data packets from a network and re-transmitting them to produce an unauthorized effect.
+* Duplicate, authenticated IP packets may disrupt a service.
+##### Man in the Middle
+
+* Attacker intercepts messages between two parties
+* Web spoofing - user believes a secure session exists, in reality the session exists with an attacker.
+##### Masquerading
+
+* One user pretends to be another computer/user.  IP Address spoofing, captured authentication sequences. Monitor weak usernames/passwords and use them.
+##### Eavesdropping
+
+* Host sets network interface on promiscuous mode and copies packets that pass for later analysis.
+##### Others
+
+* Social Engineering, Phreaking, Phishing, Pharming.
+
+Pharming - obtain private financial information through domain spoofing. This is known as DNS poisoning. User enters the poisoned server's web address, and enters credentials. Whereas Phishing is more one-to-one, Pharming is more mass effect.
 
 ## Writing Secure Code
+### User Frameworks to Enforce Security and Reliability
+
+* Handle security and reliability in common frameworks, languges, and libraries. Ideally, libraries only expose an interface that makes writing code with common classes of security vulnerabilities impossible.
+* Multiple applications can use each library or framework.  When a domain expert fixes an issue, they can remove it from all of the applications the framework supports.
+
+### Common Security Vulnerabilities
+
+* SQL Injection
+* Broken Authentication - require well-tested mechanisms like OAuth
+* Sensitive Data Exposure - use distinct types to handle sensitive data like credit card numbers
+* XML External Entities - use XML parser without XXE enabled.
+* Broken Access Control - Use a framework that requires every request handler or RPC to have well defined access control restrictions.
+* Security Misconfiguration - use a tech stack that provides secure settings by default
+* Cross Site Scripting - XSS - Use XSS hardened template system.
+* Insecure Deserialization - use libraries that are built for handling untrusted inputs, such as protocol buffers.
+* Components with Known Vulnerabilities - Chose libraries that are popular and actively maintained.
+* Insufficient Logging and Monitoring - Instead of relying on had hoc logging, log and monitor requests and other events as appropriate in a low level library.
+### Write Simple Code
+
+* Avoid multi-level nesting - common anti-pattern that can lead to mistakes. Hard to create unit tests for multi-level nesting.
+* Eliminate YAGNI Smells - Don't add functionality that might be useful in the future, this is overengineering. (YAGNI - You Aren't Going to Need It).
+* YAGNI code creates unnecessary complexity, more documentation, maintainance, test requirements.
+
+### Repay Technical Debt
+
+* Go back and fix todo's, fixme's...these lead to security vulnerabilities.
+### Refactoring
+
+* Just keep things clean and simple, go back and refactor.
+### Unit Testing
+
+* Break software into smaller, self-contained units which have no external dependencies, and test each unit.
+### Fuzz Testing
+
+* Use a fuzzing engine to generate a large number of candidate inputs that are passed through a fuzz driver to the fuzz target. Fuzzer analyzes how a system handles the input. Complex inputs handled by all kinds of software are popular targets for fuzzing. File parsers, compression algorithms, network protocol, audio codec, etc.
+### Integration Testing
+
+* Moving beyond individual units of abstraction, replacing stubbed out implementations of abstractions or network services with real implementations. Integration tests exercise more complete code paths - it's more of an, "overall" test - it might be slower and flakier, but it incorporates the real world.  
+
+### Also
+
+* Code reviews
+* Automation
+* Don't check in secrets
+* Verifiable Builds
