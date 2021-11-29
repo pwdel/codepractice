@@ -1213,8 +1213,14 @@ you got it!
 
 > How many lines contain tab characters in the file named file-with-tabs.txt in the current directory.
 
+* "sed" - serial editor, with the input '/\t/!d' ... does \t for tab
+* !d - delete the pattern space, only if the pattern does not match. So if there is no tab, delete it.
+* * is the greedy search
+* wc is the wordcount function - word and byte counts for each file.
+* wc -l print newline counts
+
 ```
-sed '/\t/!d' * |wc -l
+sed '/\t/!d' * | wc -l
 ```
 
 #### https://cmdchallenge.com/#/remove_files_without_extension
