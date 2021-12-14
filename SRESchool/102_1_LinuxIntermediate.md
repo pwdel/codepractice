@@ -314,15 +314,61 @@ Widely used these days, AWS and Azure.
 * Know about this already.
 ## Bash Scripting
 
+* Use #/bin/bash
 
 ### Writing the first bash script
 
 ### Taking user input and working with variables
 
+Use, "read"
+
+* https://github.com/pwdelbloomboard/devopstools/practice-scripts/takesureinput.sh
 ### Exit status
+
+* 0 denotes success
+
+* $? gets the exit status of thelast executed script or command
 
 ### Command line arguments and understanding If … else branching
 
+```
+if [ $# -ne 1 ];
+```
+
+* Passes in an actual argument, being $# and -ne denotes the number of the argument, 1.
+
+* Set variable name to FILE=$1, we can then operate on "$FILE" to check properties of this argument.
+* if [ -f "$FILE"]; will check if it is a regular file.
+* other flags will check for other statuses.
+
+You just have to be careful about variables and inputs.
 ### Looping over to do a repeated task
 
-### Function
+You can for example, monitor a server.
+
+```
+#!/bin/bash
+#Script to monitor the server
+
+hosts=`cat host_list`
+
+while true
+do
+    for i in $hosts
+    do
+        h="$i"
+        ping -c 1 -q "$h" &>/dev/null
+        if [ $? -eq 0 ]
+        then
+            echo `date` "server $h alive"
+        else
+            echo `date` "server $h is dead"
+        fi
+    done
+    sleep 60
+done
+```
+
+### Conclusion
+
+Understanding package management is a critical part of SRE.
