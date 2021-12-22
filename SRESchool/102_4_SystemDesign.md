@@ -29,3 +29,8 @@ View their own profile page, and manage who they follow
 #### SLO - Service Level Objective
 
 Service level objective (SLO) is defined as “a target value or range of values for a service level that is measured by an SLI”.
+
+## Notes
+
+* Read remainder of system design article.
+* Short, reshash of some topics already familiar with, such as - using CDN's, self-healing systems, etc.
