@@ -1,0 +1,13 @@
+version: '3.1'
+
+services:
+  codeperform_ubuntu_container:
+    image: codeperform_ubuntu_image:latest
+    build: .
+    container_name: codeperform_ubuntu_container
+    volumes:
+      - type: bind
+        source: ./app
+        target: /home/app
+    tty: true
+    command: 'bin/bash'
