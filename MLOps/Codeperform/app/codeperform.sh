@@ -10,8 +10,14 @@ help()
 stracetest()
 {
    # run strace -c on first input and print out the average execution time
-   TIME=$(strace -c "$1" 2>&1 >/dev/null | awk 'END{print $2}');
+   # use $@ as a general variable input
+   TIME=$(strace -c "$@" 2>&1 >/dev/null | awk 'END{print $2}');
 }
+
+# ---------------- set input variables ----------------- 
+
+APP1="$1"
+APP2="$2"
 
 
 # -------------------- main --------------------
@@ -27,9 +33,14 @@ while getopts ":h" option; do
    esac
 done
 
-# use "$@" since function's $1 is script's $1
-"$@" stracetest
-echo "$TIME"
+# use "APP1" to test the first input application
+stracetest "$APP1"
 
-echo "$1"
-echo "$2"
+# print the output of stracetest
+echo "APP1 execution time was $TIME seconds."
+
+# use "APP2" to test the second input application
+stracetest "$APP2"
+
+# print the output of stracetest
+echo "APP2 execution time was $TIME seconds."

@@ -412,3 +412,11 @@ Note that the timed value, 0.001196 is different than 0.001417. Through the proc
 ```
 chmod +x codeperform.sh
 ```
+
+
+# Sources
+
+* [About Strace](https://www.brendangregg.com/blog/2014-05-11/strace-wow-much-syscall.html)
+* [More About Strace - Strae Toolkit](https://gitlab.com/gitlab-com/support/toolbox/strace-parser)
+* [Linux Time Command](https://man7.org/linux/man-pages/man1/time.1.html)
+* [Linux Strace Command](https://man7.org/linux/man-pages/man1/time.1.html)
