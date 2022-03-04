@@ -30,7 +30,7 @@ differencetest()
 {
    # run difference on two variables
    # use $@ as a general variable input
-   THEDIFFERENCE=$(echo "$1-$2" | bc | awk '{printf "%f", $0}')
+   THEDIFFERENCE=$(echo "$1-$2" | bc | awk '{printf "%.3f", $0}')
 }
 
 # -------------------- main --------------------
@@ -68,4 +68,4 @@ echo "$APP2 execution time was $TIMETOSTDERR seconds."
 differencetest "$TIMETOSTDERR_2"  "$TIMETOSTDERR_1"
 
 # print the difference
-echo "the difference between the two is $THEDIFFERENCE"
+echo "the difference between the two is $THEDIFFERENCE seconds."

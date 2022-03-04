@@ -582,7 +582,7 @@ APP2 execution time was 0.035 seconds.
 ```
 Now we are talking about some serious difference between the two real execution times for this one operation, on the order of centiseconds vs. milliseconds.
 
-### Creating a Mathematical Output
+### Creating Mathematical Output
 
 Bash does not support floating-point arithmetic, so we need an external tool, bc, which needs to be installed.
 
@@ -595,8 +595,16 @@ differencetest()
    echo "$1"
 }
 ```
+The bc function removes the trailing zero off of the result, but interestingly, awk can do floating point arithmetic as well as customize the significant digits:
 
-### Comparing Python to C
+```
+THEDIFFERENCE=$(echo "$1-$2" | bc | awk '{printf "%.3f", $0}')
+```
+
+So we may actually consider just awk for compatibility, but this code looks cleaner so we will keep it.
+
+Besides difference, it would also be helpful to have a percentage difference.
+### Executing on Python Code
 
 
 
