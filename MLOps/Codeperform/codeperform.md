@@ -399,24 +399,227 @@ Note that the total calculated seconds is shown at the bottom of, "seconds," wit
 strace -c ./whatever 2>&1 >/dev/null | awk 'END{print $2}'
 0.001196
 ```
-Note that the timed value, 0.001196 is different than 0.001417. Through the process of building the above command, it was obvious that each time strace was run, the timed value for the command was different. This makes sense because the load on the machine is constantly changing depending upon the processor's capability. Instead of a final value, we might wish to consider an average value after a certain number of executions. But - we'll ignore that for now.
+Note that the timed value, 0.001196 is different than 0.001417. Through the process of building the above command, it was obvious that each time strace was run, the timed value for the command was different. Reading further into what strace really does, it turns out that strace actually actively slows down the running of a program while it executes the program, by up to 10 times! Essentially every time that strace runs a step in the application, it exits back into its own shell to do some calculations, then it jumps back in and runs the next step of the application again.
 
-### Turning the Strace Command into a Function and Output in our Shell Script
+Ultimately, it makes sense that the time measurements are different every time, as the computational load on a CPU may differ depending what else a machine may be doing at any given time. However, how relieable or useful strace may be as just a, "bulk measurement," of a program may be questionable.
 
+### Using the GNU time Command
 
-### Checking the Shell Script with Shellcheck
+The [GNU Time Command](https://man7.org/linux/man-pages/man1/time.1.html)...
 
+> runs the specified program command with the given arguments.  When command finishes, time writes a message to standard error giving timing statistics about this program run.
 
-### Making the Shell Script Executable
+Essentially, 
+
+Note that:
+
+> Note: some shells (e.g., bash(1)) have a built-in time command that provides similar information on the usage of time and possibly other resources.  To access the real command, you may need to specify its pathname (something like /usr/bin/time).
+
+Looking at our /usr/bin, we find:
 
 ```
-chmod +x codeperform.sh
+:/usr/bin# ls | grep time
+timeout
+uptime
 ```
 
+Basically, we don't have the, "real" time installed, so we can try to do that with:
+
+```
+apt-get install time
+
+...
+
+:/usr/bin# ls | grep time
+time
+timeout
+uptime
+```
+
+Once we have this installed, we can invoke the actual, "real" time command with:
+
+```
+/usr/bin/time time -p ./whatever
+
+hi!
+real 0.00
+user 0.00
+sys 0.00
+```
+
+Note, this is different than if we just use, "time ./whaever" which does actually print out a different set of results:
+
+```
+time ./whatever
+hi!
+
+real	0m0.004s
+user	0m0.002s
+sys	0m0.001s
+```
+
+Playing around with this time function, we see that there is a help flag with --help, as well as --verbose, --quiet, which supresses non-zero exit status and --format=format which formats the output according to rules given on the help page, which specify a, "printf like way."  So to replicate the results of -p, we can format as follows:
+
+```
+/usr/bin/time time -f "real %E\nuser %U\nsys %S\n" ./whatever
+
+hi!
+
+real 0:00.00
+user 0.00
+sys 0.00
+```
+
+Looking at the precision of this output, what we see is unfortunately the maximum precision we can get with is centiseconds, whereas the bash time command can work with a bit more precision. We can find documentation for the builtin bash time function by searching under, "TIMEFORMAT" within [here](https://man7.org/linux/man-pages/man1/bash.1.html).  Basically the only way we can adjust the time format is with "TIMEFORMAT=%3R" as a setting within bash.
+
+We can also reset the timeformat to the original -p value with:
+
+```
+TIMEFORMAT=$'\nreal\t%3lR\nuser\t%3lU\nsys\t%3lS'
+```
+
+```
+time ./whatever
+hi!
+0.003
+```
+Here with this function of, "time" the only option avaialble is -p, which shortens the precision.
+
+So therefore, pushing this into awk:
+
+```
+{ time ./whatever ; } 2> result.txt
+hi!
+...
+
+awk '{ print }' result.txt
+0.003
+```
+So basically, rounding this out, we have the following command which cleanly prints out the real time in seconds:
+
+```
+{ time ./whatever ; } 1> /dev/null | awk '{ print }'
+0.003
+```
+### Putting This Back Into codeperform.sh
+
+So going back into our functions, we insert:
+
+```
+timetest()
+{
+   # format time to seconds only, real time, 3 significant digits
+   TIMEFORMAT=%3R
+   # run time function on 
+   # use $@ as a general variable input
+   THETIME=$({ time "$@" ; } 1> /dev/null | awk '{ print }');
+}
+```
+
+Which actually creates a shellcheck error, saying that the redirection overrides the output pipe, so we should use "tee" to prevent that. So we change the above to:
+
+```
+timetest()
+{
+   # format time to seconds only, real time, 3 significant digits
+   TIMEFORMAT=%3R
+   # run time function on 
+   # use $@ as a general variable input
+   THETIME=$({ time "$@" ; } | tee 1> /dev/null awk '{ print }');
+}
+```
+Which, this takes away the error, but our variable THETIME is not being reported down under the functon call below. The reason we continued to use /dev/null is to get around awk '{ print }' going and printing a new line as the output of the time function. We can get around that quirk by using printf:
+
+```
+{ time ./whatever ; } | awk 'BEGIN{ printf "" }'
+0.003
+```
+So now we don't have to use tee to send the results to awk, and we should have a result with no new line if we put this back in our script. However, it just results in more complications of course with confusions between stdout and stderr. So instead the better route was to simply place the stderr into an environmental variable, and then run awk on that.
+
+```
+timetest()
+{
+   # format time to seconds only, real time, 3 significant digits
+   TIMEFORMAT=%3R
+   # run time function on 
+   # use $@ as a general variable input
+   TIMETOSTDR=$({ time "$@" ; } 1> /dev/null);
+   THETIME=$(awk '{ print }' "$TIMETOSTDR");
+   
+}
+```
+However, if we do some debugging, we see that what we expect to be happening with variable assignment is not happening at all. Basically, what we had expected was that our TIMETOSTDR was being assigned the stderr of the command, "time $@" but instead what was happening was that it was getting assigned stdout. This was found by placing some, "echo" statements within the above function and observing the outputs of variables at different points.
+
+The real way to assign the stderr output into a variable would be the following.  Side note, using /dev/null results in a faster response time than just some random variable such as, "output" - not sure why, but something computationally intensive on the order of 5 microseconds is going on.:
+
+```
+WAKA=$({ time ./whatever > /dev/null ; } 2>&1)
+...
+echo $WAKA
+0.003
+```
+So replacing our faulty variable assignment code, we then have the following, with ```echo "$@"``` thrown in for good measure to make sure we're indeed evaluating both input applications.
+
+```
+timetest()
+{
+   # format time to seconds only, real time, 3 significant digits
+   TIMEFORMAT=%3R
+   # run time function on 
+   # use $@ as a general variable input
+   TIMETOSTDERR=$({ time "$@" > /dev/null ; } 2>&1)
+   echo "$@"
+}
+```
+The above runs the code flawelessly, showing the time difference for each test.
+
+Now, if we re-do our hello10.c code so that it prints out "hello" a million times and re-compile it, testing it with our evaluator tool, we get:
+
+```
+# ./codeperform.sh './whatever' './whatever10'
+APP1 execution time was 0.002 seconds.
+APP2 execution time was 0.035 seconds.
+```
+Now we are talking about some serious difference between the two real execution times for this one operation, on the order of centiseconds vs. milliseconds.
+
+### Creating a Mathematical Output
+
+Bash does not support floating-point arithmetic, so we need an external tool, bc, which needs to be installed.
+
+```
+differencetest()
+{
+   # run difference on two variables
+   # use $@ as a general variable input
+   THEDIFFERENCE=$(echo "$1-$2" | bc)
+   echo "$1"
+}
+```
+
+### Comparing Python to C
+
+
+
+### Comparing a Vectorized Operation vs. Non Vectorized Operation
+
+
+### Updating the Help File
+
+
+### Error Processing, Other Shell Best Practices
+
+
+### Updating the Docker File to Include Needed Functions
+
+bc
+### Creating a Dynamic Link to This Shell Command
+
+To T
 
 # Sources
 
 * [About Strace](https://www.brendangregg.com/blog/2014-05-11/strace-wow-much-syscall.html)
 * [More About Strace - Strae Toolkit](https://gitlab.com/gitlab-com/support/toolbox/strace-parser)
-* [Linux Time Command](https://man7.org/linux/man-pages/man1/time.1.html)
+* [Bash Time Command](https://man7.org/linux/man-pages/man1/time.1.html)
 * [Linux Strace Command](https://man7.org/linux/man-pages/man1/time.1.html)
+* [Bash Time vs Gnu Time Precision](https://unix.stackexchange.com/questions/70653/increase-e-precision-with-usr-bin-time-shell-command)
