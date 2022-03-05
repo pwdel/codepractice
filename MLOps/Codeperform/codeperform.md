@@ -229,17 +229,17 @@ docker exec -t -i codeperform_ubuntu_container /bin/bash
 From here we see that the directory structure is:
 
 ```
-bin  boot  dev  etc  home  lib  lib32  lib64  libx32  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var
+bin  boot  dev  etc ~  lib  lib32  lib64  libx32  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var
 ```
 
-...and "home" seems like a good place, so we can copy our files to, "home/app" by modifying the Dockerfile:
+...and ~" seems like a good place, so we can copy our files to, ~/app" by modifying the Dockerfile:
 
 ```
 # copy files from local directory
-COPY app /home/app
+COPY app ~/app
 ```
 
-After deleting the running Docker Container, running through the above commands again puts the files we need in, "home/app".
+After deleting the running Docker Container, running through the above commands again puts the files we need in, ~/app".
 
 The Dockerfile defines how an image is built, not how it's used, so you can't specify the bind mount in a Dockerfile. We could create a declarative specification for including the Dockerfile in question, and including a bind mount or volume, allowing us to simply run, "docker-compose up -d" rather than a complex Docker command line, by including a docker-compose.yml file with the following:
 
@@ -253,10 +253,10 @@ services:
     volumes:
       - type: bind
         source: ./app
-        target: /home/app
+        target: ~/app
 ```
 
-We can run the above by navigating into the folder where this docker-compose.yml file sits and then running, "docker-compose up -d" - which follows the commands shown above and then runs the container, mounting the volume with at the specified directory noted as a cannonical path ending with the ./app folder (with the ./ included to indicate a relative path), and connecting that to /home/app on the container.
+We can run the above by navigating into the folder where this docker-compose.yml file sits and then running, "docker-compose up -d" - which follows the commands shown above and then runs the container, mounting the volume with at the specified directory noted as a cannonical path ending with the ./app folder (with the ./ included to indicate a relative path), and connecting that to ~/app on the container.
 
 Of course, when we run, "docker-compose up -d" or "docker-compose up" the container exits after the process has completed.
 
@@ -303,7 +303,7 @@ So the reason we have set up this fancy Dev Mode Container is to be able to make
 So to run a simple test, we can do the following from within the container:
 
 ```
-/home/app# echo 'hello worlds' >> hellotest.txt
+~/app# echo 'hello worlds' >> hellotest.txt
 ```
 Which we can see saves a file on our local.  Removing this file also removes it on local.
 
@@ -606,23 +606,244 @@ So we may actually consider just awk for compatibility, but this code looks clea
 Besides difference, it would also be helpful to have a percentage difference.
 ### Executing on Python Code
 
+So the first thing to do is install a python3-minimal base in our container:
 
+```
+apt-get update -y
+apt-get install -y python3-minimal
+```
+In order to operate on a python script that we create, basically on a stock, "hello world" function, we have to put python within brackets, which essentially opens up a command shell, executing the code, and then pushing the output of that to time.
+```
+time { python3 hello.py; }
+hello world
+0.022
+```
+Translating this to our own bash script is a bit problematic, because if we pump in that command, basically the functions we wrote have no idea what to do with it:
 
+```
+./codeperform.sh { python3 hello.py; }
+```
+If we enter the function name as an argument into our bash script, we can echo it back out as an output, so we know that we can actually put a string into the our script which at least is the title of the script. From there, we can hypothetically run an if function to look for the .py extension and then have a conditional that pushes the evaluation into the proper function which measures the time of execution, including those {} if necessary.
+
+We can test out with grep rather than regex, since grep is a lot easier to use:
+
+```
+if echo "hello.py" | grep -q .py; then
+    echo "MATCH!"
+fi
+...
+
+MATCH!
+```
+Testing an alternative case:
+```
+if echo "hello.rb" | grep -q .py; then
+    echo "MATCH!";
+fi
+    echo "NO MATCH!";
+...
+NO MATCH!
+```
+
+So hypothetically an if statement could assign a variable based upon whether a .py exists within the input filename, which using the grep operator, is pretty easy to accomplish:
+
+```
+apptype()
+{
+   # if the input program has .py, then it's python
+   if echo "$@" | grep -q .py; then
+      APPTYPE="python"
+   else
+      APPTYPE="unknown"
+   fi
+}
+```
+
+Once we have the proper application type labeled, we can then enter into the proper if statement to execute the code in the way it needs to be executed, so in the case of python:
+
+```
+   elif [ "$APPTYPE" == "python" ]; then
+      TIMETOSTDERR=$({ time python3 "$@" > /dev/null ; } 2>&1)
+```
+
+Finally running the code with a compiled c application vs. our hello.py:
+
+```
+./codeperform.sh './whatever10' hello.py
+./whatever10 execution time was 0.037 seconds.
+hello.py execution time was 0.019 seconds.
+the difference between (./whatever10) - (hello.py) is -0.018 seconds.
+```
 ### Comparing a Vectorized Operation vs. Non Vectorized Operation
 
+Python has the ability to vectorize through numpy. That being said, python-slim does not have the capability to install numpy with pip3, so we may need to manually install a binary.
 
+Starting out, a brief python program which calculates the dot product manually via a for loop can be created as follows:
+
+```
+import array
+
+# 8 bytes size int
+a = array.array('q')
+for i in range(100000):
+    a.append(i);
+  
+b = array.array('q')
+for i in range(100000, 200000):
+    b.append(i)
+
+dot = 0.0;
+
+for i in range(len(a)):
+      dot += a[i] * b[i]
+
+print("dot_product = "+ str(dot));
+```
+
+Attempting to run this through our new codeperform.sh results in:
+
+```
+# ./codeperform.sh dotproduct.py
+dotproduct.py execution time was 0.088 seconds
+```
+
+88 ms is not very much! It would be great to have closer to a tenth of a second perhaps, to see if we can get some serious performance difference between two different ways of doing this operation. Upping the order of magnitude on the array sizes to 10^6 gets us in the 0.6 second range.
+
+So that being said, we have to figure out how to install numpy and compile the binary manually. To find out which version of python we're using, simply do python3 --version:
+
+```Python 3.8.10```
+
+Looking on the numpy.org/news site, we see that Numpy 1.22.0 is compatible with Python 3.8. We have to remember to install pip.
+
+```
+pip --version
+pip 20.0.2 from /usr/lib/python3/dist-packages/pip (python 3.8)
+```
+
+So creating a requirements.txt, we explicitly call out numpy==1.22.0 and then compile from binary with:
+
+```
+apt-get update && \
+    apt-get install -y \
+        build-essential \
+        make \
+        gcc \
+    && pip install -r requirements.txt \
+    && apt-get remove -y --purge make gcc build-essential \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
+```
+After this and testing the python shell, we are able to see that importing numpy is no problem. 
+
+Now, comparing the two methods in our new shell tool, codeperform, we get (using the 10^6 order of magnitude):
+
+```
+# ./codeperform.sh dotproductvect.py dotproduct.py
+dotproductvect.py execution time was 0.444 seconds.
+dotproduct.py execution time was 0.633 seconds.
+the difference between (dotproductvect.py) - (dotproduct.py) is 0.189 seconds.
+```
+Running this again, with the 10^5 order of magnitude:
+
+```
+./codeperform.sh dotproductvect.py dotproduct.py
+dotproductvect.py execution time was 0.176 seconds.
+dotproduct.py execution time was 0.088 seconds.
+the difference between (dotproductvect.py) - (dotproduct.py) is -0.088 seconds.
+```
+
+Whoa! This was not at all the performance boost that I was expecting. Python-centric articles online recommend using the embedded python, "tic/toc" function from the time library, which show that in the 10^5 order of magnitude range, the vectorization method is supposed to be 100 times faster, however in our case, it's 2 times slower! Of course in the 10^6 range, it's faster, but only by 1.4. Of course that performance adds up over time, but what's interesting is that the vectorization, from a real-time, "outside of the python evnironment," world, only seems to make sense past a certain quantity of bytes being added into a variable. It's almost as though adding those values into an array has a fixed cost, below which it's not really worth it to use vectorization and you might as well use a for-loop if it's not at least a million or so values (or whatever the byte equivalent might be).
+
+If we go back to our trusty old strace, and run the following two commands with our values at the 10^5 level:
+
+```
+strace python3 dotproduct.py 2> linecount.txt
+strace python3 dotproductvect.py 2> linecountvect.txt
+```
+We can see that the dotproduct.py application executes 598 lines of code while the dotproductvect.py application executes 2939 lines of code!
+
+If we change our values in the files back to the 10^6, on dotproduct.py and dotproductvect.py, we get:
+
+* 674 lines executed on dotproduct.py
+* 3039 lines executed on dotproductvect.py
+
+Of course, running the timer again on both functions does come up with a similar ratio of timing, with the vector version being about 1.4 times faster than the for-loop version.
+
+So basically, it's not that the for-loop version executes way more lines of code either way, it's just that one of those executions is a command to, "do the thing a lot of times," whereas the overhead generally for using that numpy array is really high.
 ### Updating the Help File
 
+So now that we have our tool essentially built and functioning with binaries and python, it's time to write a help file.
 
+In short, the help file is visible with the -h flag. I wanted to make it look a bit cool and hacker-ish, so I added some separator brackets and bars.
 ### Error Processing, Other Shell Best Practices
 
+Unfortunately this is a very simple project, so I didn't add any error processing or handling.
 
-### Updating the Docker File to Include Needed Functions
-
-bc
 ### Creating a Dynamic Link to This Shell Command
 
-To T
+It's kind of annoying to keep having to type out, "./whatevercommand.sh" every time one has to run a program. So basically we're going to copy this into our ~/bin folder and then ensure the path to that folder is included in our bash profile.
+
+So first, we just want this command available to our user, so we can create a file:
+
+```
+mkdir ~/bin
+```
+Then we can copy our codeperform.sh into that file, give it a new name and change the permissions with chmod.
+
+```
+cp codeperform.sh ~/bin/codeperform
+chmod +x ~/bin/codeperform
+```
+Next, we can add an export to put the path variable into our .bashrc profile:
+
+```
+echo "export PATH=\$PATH:~/bin" >> ~/.bashrc
+```
+Then, we can restart / source bash:
+
+```
+source ~/.bashrc
+```
+So finally we can use codeperform as simply a command:
+
+```
+codeperform hello.py
+hello.py execution time was 0.022 seconds.
+```
+We can figure out how to add this into the docker image if we so choose.
+### Updating the Docker File to Include Needed Functions
+
+* get versions
+
+bc
+bc 1.07.1
+
+apt-get install build-essential for gcc
+apt-get install -y python3-minimal
+
+Python 3.8.10
+
+RUN apt-get update && \
+    apt-get install -y \
+        build-essential \
+        make \
+        gcc \
+    && pip install -r requirements.txt \
+    && apt-get remove -y --purge make gcc build-essential \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
+
+
+pip --version
+pip 20.0.2 from /usr/lib/python3/dist-packages/pip (python 3.8)
+
+Create user binary, add custom command into it, and add to bash profile so it's available.
+
+## Ideas for Future Improvement
+
+* For c code, rather than requiring binaries, have the tool compile the whatever.c file and then run the binary.
+* Include functionality for rust, go and other relevant languages.
+* Compare the execution time on a 10^5 and 10^6 dot product within c code vs. python.
 
 # Sources
 
