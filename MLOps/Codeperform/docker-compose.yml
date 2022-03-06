@@ -10,4 +10,3 @@ services:
         source: ./app
         target: /home/app
     tty: true
-    command: 'bin/bash'
