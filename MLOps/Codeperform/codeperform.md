@@ -813,16 +813,32 @@ hello.py execution time was 0.022 seconds.
 We can figure out how to add this into the docker image if we so choose.
 ### Updating the Docker File to Include Needed Functions
 
-* get versions
+First, we should explicitly call out the Ubuntu version for the Docker image.
 
-bc
-bc 1.07.1
+```
+cat /etc/issue
+Ubuntu 20.04.4 LTS \n \l
+```
+Which would correspond to:
 
-apt-get install build-essential for gcc
-apt-get install -y python3-minimal
+```
+ubuntu:20.04
+```
+Next, we need to install our dependencies, the first of which was bc, which was used in a mathematical operation.
 
-Python 3.8.10
+The versions we used were ```bc 1.07.1```, ```Python 3.8.10```
 
+```
+RUN apt-get update                                                 \
+    # install shell tools, bc, python
+    apt-get install -y --no-install-recommends                     \
+        bc=1.07.*                                                  \
+        python3-minimal=3.8.10                                     \
+        python3-pip=20.0.2                                         \
+    apt-get clean                                               && \
+    rm -rf /var/lib/apt/lists/*
+
+# install python requirements.txt via binary
 RUN apt-get update && \
     apt-get install -y \
         build-essential \
@@ -832,10 +848,90 @@ RUN apt-get update && \
     && apt-get remove -y --purge make gcc build-essential \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
+```
 
+After adding the above to the Dockerfile, and deleting the old image and container, we can run Docker-compose again to build this image and get it up and running.
 
+```
+docker-compose up -d
+docker exec -t -i codeperform_ubuntu_container /bin/bash
+```
+The first problem we have with the above method is, ```executor failed running [/bin/sh -c apt-get update``` which is because the Docker runtime which is running the installation is running /bin/sh rather than /bin/bash.
+
+Once we have a, ```RUN /bin/bash``` statement included in the Dockerfile, this error is cleared, but then we have a problem with our apt-update transition to apt-install, which can be fixed by adding ```&& \```, with the "&&" term being used to mean, "execute the next command only if the preceding command exited without errors. This is of course different than ending a line with ";" which means, "just do the next lineno matter what," and "||" means, exit if the previous command failed (so it's kind of like a fixit).  So, we're sing dependencies, so each line is dependant upon the last one executing properly.
+
+```RUN apt-get update && \```
+
+The other thing we're trying to do with this Dockerfile, is to be as explicit we can be with the versions of packages that we're installing.  Of course, this leads to issues if the version numbers are not exactly correct, as with:
+
+```
+#12 4.920 E: Version '3.8.10' for 'python3-minimal' was not found
+#12 4.920 E: Version '20.0.2' for 'python3-pip' was not found
+```
+
+* Searching online through the Ubuntu packages repo at packages.ubuntu.com for Ubuntu 20.04, even though the python version is 3.8.10, the actual python3-minimal version is, "3.8.2-0ubuntu2".
+* As far as python-pip goes, it appears there is not a dedicated python-pip for Ubuntu 20.04, but there is one for Ubuntu 18.04, "9.0.1-2.3~ubuntu1.18.04.5" - so we can try that, although there is a, python-pip-whl with version, "20.0.2-5ubuntu1.5" as well. 
+* Looking a bit closer, even though the, "pip" command is used in our Dockerfile, the actual package we're trying to install is "python3-pip=20.0.2-5ubuntu1.5" which is compatible with Ubuntu 20.04. Ideally, the alias, "pip" will work and the bash shell within Docker will not be required to use, "pip3."
+
+When we use this package, python3-pip, then we get the error that we're missing the "whl" version, so likely it's required for installing python3-pip, as a whl (zip) type package:
+
+```
+#12 4.915 The following packages have unmet dependencies:
+#12 5.003  python3-pip : Depends: python-pip-whl (= 20.0.2-5ubuntu1.5) but 20.0.2-5ubuntu1.6 is to be installed
+```
+Basically, it's not clear which version of python3-pip is used, and what kinds of dependency errors are created when attempting to install, so instead of listing out the exact version, we do:
+
+```
+python3-pip=20.0.*                                      && \
+```
+Which basically installs whatever the latest python3-pip verson of 20.0 is, minimizing the chance of erros while being as explicit as possible. This could cause problems later, but not as likely as just doing, "python3-pip" with no version.
+
+Finally, we get an error that Docker can't access the requirements file.
+
+```
+ERROR: Could not open requirements file: [Errno 2] No such file or directory: 'requirements.txt'
+```
+
+To fix this, we simply have to move into the proper working directory within the Dockerfile in order to able to access that requirements.txt file.
+
+```
+# move into the proper working directory
+WORKDIR /home/app
+```
+Finally, it installs. However when attempting to run the container, we get another error:
+
+```
+OCI runtime create failed: container_linux.go:380: starting container process caused: exec: "bin/sh": stat bin/sh: no such file or directory: unknown
+```
+For some reason, the docker-compose command ```    command: 'bin/bash'``` won't allow us to immediately bash into the container. However, if we do the following command after the container is built, it works.  This evidently could be in part because we do: ```RUN /bin/bash``` in the Dockerfile whereas previously we did not.
+
+```
+docker exec -t -i codeperform_ubuntu_container /bin/bash
+```
+So, upon logging in, we can test to see if our various tools work:
+
+```
+$ docker exec -t -i codeperform_ubuntu_container /bin/bash
+python3 --version
+Python 3.8.10
+bc --version
+bc 1.07.1
+Copyright 1991-1994, 1997, 1998, 2000, 2004, 2006, 2008, 2012-2017 Free Software Foundation, Inc.
 pip --version
 pip 20.0.2 from /usr/lib/python3/dist-packages/pip (python 3.8)
+python3
+Python 3.8.10 (default, Nov 26 2021, 20:14:08)
+[GCC 9.3.0] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import numpy
+>>>
+```
+Basically, everything we expected is working.
+
+The only thing that's not working is of course, our alias for our custom command. This requires running the above commands that we had earlier established to install, "codeperform" into ~/bin, as well as the bash profile, and then make it executable.
+
+
+
 
 Create user binary, add custom command into it, and add to bash profile so it's available.
 
