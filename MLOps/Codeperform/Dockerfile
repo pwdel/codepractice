@@ -1,9 +1,6 @@
 # syntax=docker/dockerfile:1
 FROM ubuntu:20.04
 
-# copy files from local directory
-COPY app /home/app
-
 # switch to bash shell in Docker runtime
 RUN /bin/bash
 
@@ -15,6 +12,9 @@ RUN apt-get update                                              && \
         python3-pip=20.0.*                                      && \
     apt-get clean                                               && \
     rm -rf /var/lib/apt/lists/*
+
+# copy files from local directory
+COPY app /home/app
 
 # move into the proper working directory
 WORKDIR /home/app
@@ -32,3 +32,8 @@ RUN apt-get update                                              && \
 
 # Create executable shell script for codeperform.sh
 # Add to ~/bin, make executable
+RUN mkdir ~/bin                                                 && \
+    cp codeperform.sh ~/bin/codeperform                         && \
+    chmod +x ~/bin/codeperform                                  && \
+    echo "export PATH=\$PATH:~/bin" >> ~/.bashrc                && \
+    . ~/.bashrc

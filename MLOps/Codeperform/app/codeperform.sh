@@ -12,7 +12,7 @@ help()
     echo "               real-time performance  of binary and python applications.";
     echo "               both python and binary files can be used or tested against each other.";    
     echo " usage:        codeperform [file] [file] ";
-    echo " formatting:   binary files should be enclosed in single quotes    ---> './binaryfile' ";
+    echo " formatting:   binary files should be enclosed in single quotes    ---> ./binaryfile  ";
     echo "               python files do not require quotes                  ---> pythonfile.py .";    
     echo " |------------------------------------------------------------------------------------------------| ";    
 }

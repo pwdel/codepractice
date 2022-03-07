@@ -926,14 +926,26 @@ Type "help", "copyright", "credits" or "license" for more information.
 >>> import numpy
 >>>
 ```
-Basically, everything we expected is working.
+Basically, everything we expected is working. Since docker works on layers, it's good to have the Dockerfile design such that all of these, "heavier weight" things, basically installing dependencies, happen in a, "lower layer," meaning higher up on the Dockerfile, because they don't have to run again and again, we just have to do quick fixes on the last bit of code at the end. The only thing that's not as certain is that, since we are copying files from the local, /app/ folder and mounting them, would it be appropriate to move the COPY command lower, if for example, we add additional dependencies to the requirements.txt file?  Likely it would be best to add this command at least below the previous 
 
-The only thing that's not working is of course, our alias for our custom command. This requires running the above commands that we had earlier established to install, "codeperform" into ~/bin, as well as the bash profile, and then make it executable.
+The only thing that's not working is of course, our alias for our custom command. This requires running the above commands that we had earlier established to install, "codeperform" into ~/bin, as well as the bash profile, and then make it executable. So we add that:
 
+```
+RUN mkdir ~/bin                                                 && \
+    cp codeperform.sh ~/bin/codeperform                         && \
+    chmod +x ~/bin/codeperform                                  && \
+    echo "export PATH=\$PATH:~/bin" >> ~/.bashrc                && \
+    source ~/.bashrc
+```
+So what we found when using the above is that, "source" is not found. This is because executing a script with, "." involves opening up a new shell, writing the commands into that new shell, and then copying the output back into the current shell, and closing that new shell. So basically any changes to that new environment will take effect only in the new shell. In contrast, sourcing the commands takes place in the, "current shell," so basically attempting to restart, "~/.bashrc" in the current shell or doing whatever command, could change the environment. However in this situation all we need to do is, "press a button," so the, "." to open up a new shell and execute it, is fine.
 
+So after that, everything works as expected!
 
+### Conclusion
 
-Create user binary, add custom command into it, and add to bash profile so it's available.
+* One thing to note is that, if a changes is made to codeperform.sh, it does not automatically change the, "codeperform" tool, this is only done at initialization or setup of the image.
+* Also, since in order to change the setup image requires a change in the Dockerfile, even if you change the codeperform.sh file, it may not change the base image, because the Dockerfile wasn't changed.
+
 
 ## Ideas for Future Improvement
 
