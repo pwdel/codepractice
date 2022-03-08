@@ -937,7 +937,12 @@ RUN mkdir ~/bin                                                 && \
     echo "export PATH=\$PATH:~/bin" >> ~/.bashrc                && \
     source ~/.bashrc
 ```
-So what we found when using the above is that, "source" is not found. This is because executing a script with, "." involves opening up a new shell, writing the commands into that new shell, and then copying the output back into the current shell, and closing that new shell. So basically any changes to that new environment will take effect only in the new shell. In contrast, sourcing the commands takes place in the, "current shell," so basically attempting to restart, "~/.bashrc" in the current shell or doing whatever command, could change the environment. However in this situation all we need to do is, "press a button," so the, "." to open up a new shell and execute it, is fine.
+So what we found is that, we weren't really using bash the whole time at all, we were using /bin/sh, which is why "source" didn't work but using ". ~/.bashrc" did work. Source is not included in /bin/sh.  Basically the command at the top of the Dockerfile, "RUN /bin/bash" wasn't really running bash for the whole Dockerfile, it was just doing it for that one command. Instead, to switch actual shells, we have to use:
+
+```
+SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
+```
+However, this causes a bunch of errors dealing with environment variables, since now we're in bash rather than bin/sh. So instead of adding the above, we just removed, "RUN /bin/bash" and changed, "source" to ".".
 
 So after that, everything works as expected!
 
