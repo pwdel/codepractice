@@ -1,9 +1,6 @@
 # syntax=docker/dockerfile:1
 FROM ubuntu:20.04
 
-# switch to bash shell in Docker runtime
-RUN /bin/bash
-
 RUN apt-get update                                              && \
     # install shell tools, bc, python
     apt-get install -y --no-install-recommends                     \
