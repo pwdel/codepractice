@@ -235,3 +235,10 @@ What we could do for now is monitor something else, perhaps a random number gene
 https://pypi.org/project/python-daemon/
 
 https://raspberrypi.stackexchange.com/questions/5371/whats-the-right-way-to-run-a-python-script-as-a-daemon-service-in-raspbian-o
+
+
+
+Power concsumption with RPi
+
+https://blog.rustprooflabs.com/2019/04/postgresql-pgbench-raspberry-pi
+
