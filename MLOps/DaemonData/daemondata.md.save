@@ -756,7 +756,7 @@ import urllib.parse as up
 import psycopg2
 
 up.uses_netloc.append("postgres")
-url = up.urlparse(os.environ["DATABASE_URL"])
+url = up.urlparse(os.environ["postgres://riobslkg:Y5Mzefvu40Ah7OcS77W82mzscsts9Jo9@kashin.db.elephantsql.com/riobslkg"])
 conn = psycopg2.connect(database=url.path[1:],
 user=url.username,
 password=url.password,
@@ -820,9 +820,7 @@ docker run --name rpi_container -it lukechilds/dockerpi
 ```
 Of course we lost the previous state of the container, but we can go back and re-install stuff, we're still at the playing around point and don't really need everything yet.
 
-After re-setting up the container, it worked and we were able to successfully install and fix errors. The setup method used was put into a setup script for the Rpi.
-
-Attempting to connect again with our stock Python code shown above,
+After re-setting up the container:
 
 
 
@@ -871,3 +869,11 @@ https://blues.io/blog/tips-tricks-optimizing-raspberry-pi-power/
 There are also hardware-oriented strategies.
 
 Noteable as well, there are also ready-built solar battery optimization kits for Raspberry Pi.
+
+### Remoting Into the RPi From Another Location
+
+Since the Raspberry Pi will be essentially sitting in the middle of a field, it will be useful to be able to remote into it so as not to have to open it up to check its usage.
+
+For this we can look into something called, "Ngrok," which is essentially a single-channel VPN type of service which allows us to form a channel into the RPi in order to run an SSH.
+
+
