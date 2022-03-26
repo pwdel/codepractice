@@ -237,8 +237,633 @@ https://pypi.org/project/python-daemon/
 https://raspberrypi.stackexchange.com/questions/5371/whats-the-right-way-to-run-a-python-script-as-a-daemon-service-in-raspbian-o
 
 
-
 Power concsumption with RPi
 
 https://blog.rustprooflabs.com/2019/04/postgresql-pgbench-raspberry-pi
 
+
+### Researching What Already Exists for Battery Monitoring Daemons for RPI
+
+* There is a tool that checks whether a GPIO pin is working:
+
+https://elinux.org/R-Pi_Troubleshooting#Testing
+
+* There is a Daemon that can monitor GPIO
+
+http://abyz.me.uk/rpi/pigpio/pigpiod.html
+
+it's already written in C++, so it's probably better to use that rather than write an entirely new daemon.
+
+Here's more info on it:
+
+https://abyz.me.uk/rpi/pigpio/piscope.html
+
+### Utilizing Python-Daemon to Create a Daemon
+
+* It doesn't make sense to write a Daemon, given that a Daemon already exists for this purpose.
+* It's better to look at the documentation, which takes a large amount of time already, and install and use the Daemon in question.
+
+### Installing PigPi Daemon on Raspberry Pi Simulator
+
+https://abyz.me.uk/rpi/pigpio/download.html
+
+Python setup tools may be needed.
+
+```
+sudo apt install python-setuptools python3-setuptools
+```
+Then, do the actual installation:
+
+```
+wget https://github.com/joan2937/pigpio/archive/master.zip
+unzip master.zip
+cd pigpio-master
+make
+sudo make install
+```
+We're going to need to understand where to install this stuff, and how to keep it organized within the Rpi.
+
+Once this is all installed using the above commands, we should be ready to get a daemon going that monitors a particular GPIO continously as a daemon.
+
+Of course, if we attempt to test the library, we get the following error:
+
+```
+ sudo ./x_pigpio
+2022-03-24 18:25:42 gpioHardwareRevision: unknown revision=0
+2022-03-24 18:25:42 initCheckPermitted:
++---------------------------------------------------------+
+|Sorry, this system does not appear to be a raspberry pi. |
+|aborting.                                                |
++---------------------------------------------------------+
+
+
+pigpio initialisation failed.
+```
+
+We get the same problem if we attempt to start the daemon: ```sudo pigpiod```
+
+That being said, we can review some of the documentation to see what the output of the daemon would be, and hypothetically come up with a plan for what the output should be.
+Further, we can build a script that is designed to install all or the majority of the tools we may need.
+
+### Reveiwing the PigPio Documentation
+
+https://abyz.me.uk/rpi/pigpio/pigpiod.html
+
+Once launched the pigpio library runs in the background accepting commands from the pipe and socket interfaces.
+
+#### pigpiod
+
+```
+sudo pigpiod -s 2 -b 200 -f
+```
+
+* Launch pigpiod
+* 2 microseconds sample rate
+* 200 millisecond buffer
+* -f will disable fifo interface
+
+Other interesting options:
+
+* -n IP_ADDRESS ... allows an IP address to access the socket interface, otherwise all IP addresses allowed
+* -l ... only allows local (non-remote) connections to GPIO pins
+* -t is used as a clock peripheral to select either PWM or PCM for outputs
+
+#### Features of pigpio in General
+
+* GPIO sampling up to 5 us, hardware timed
+* hardware timed PWM
+* hardware timed servo pulses
+* notifications via pipe on GPIO 0-31 level change
+* reading/writing all of the GPIO as a single operation
+* socket and pipe interfaces with the bulk of functionality
+
+##### Socket Interface
+
+* The socket is available whenever pigpio is running, either whether it has been started as a daemon, or linked to a running user program.
+* By default the socket interface is running in the daemon, unless the -k flag is activated to disable it
+* pigpio listens for connections on port 8888 (presumably on localhost) by default, this may be overwridden with -p on the daemon or gpcioCfgSocketPort function call.
+
+#### Python Code Example
+
+Function to instantly check the status of all of the GPIO's using the pigpio library:
+https://abyz.me.uk/rpi/pigpio/examples.html#Python%20code
+
+```
+#!/usr/bin/env python
+
+import time
+import curses
+import atexit
+
+import pigpio 
+
+GPIOS=32
+
+MODES=["INPUT", "OUTPUT", "ALT5", "ALT4", "ALT0", "ALT1", "ALT2", "ALT3"]
+
+def cleanup():
+   curses.nocbreak()
+   curses.echo()
+   curses.endwin()
+   pi.stop()
+
+pi = pigpio.pi()
+
+stdscr = curses.initscr()
+curses.noecho()
+curses.cbreak()
+
+atexit.register(cleanup)
+
+cb = []
+
+for g in range(GPIOS):
+   cb.append(pi.callback(g, pigpio.EITHER_EDGE))
+
+# disable gpio 28 as the PCM clock is swamping the system
+
+cb[28].cancel()
+
+stdscr.nodelay(1)
+
+stdscr.addstr(0, 23, "Status of gpios 0-31", curses.A_REVERSE)
+
+while True:
+
+   for g in range(GPIOS):
+      tally = cb[g].tally()
+      mode = pi.get_mode(g)
+
+      col = (g / 11) * 25
+      row = (g % 11) + 2
+
+      stdscr.addstr(row, col, "{:2}".format(g), curses.A_BOLD)
+
+      stdscr.addstr(
+         "={} {:>6}: {:<10}".format(pi.read(g), MODES[mode], tally))
+
+   stdscr.refresh()
+
+   time.sleep(0.1)
+
+   c = stdscr.getch()
+
+   if c != curses.ERR:
+      break
+
+```
+Function to monitor the GPIO's for level changes:
+https://abyz.me.uk/rpi/pigpio/examples.html#Python%20code
+
+```
+
+#!/usr/bin/env python
+
+# monitor.py
+# 2016-09-17
+# Public Domain
+
+# monitor.py          # monitor all GPIO
+# monitor.py 23 24 25 # monitor GPIO 23, 24, and 25
+
+import sys
+import time
+import pigpio
+
+last = [None]*32
+cb = []
+
+def cbf(GPIO, level, tick):
+   if last[GPIO] is not None:
+      diff = pigpio.tickDiff(last[GPIO], tick)
+      print("G={} l={} d={}".format(GPIO, level, diff))
+   last[GPIO] = tick
+
+pi = pigpio.pi()
+
+if not pi.connected:
+   exit()
+
+if len(sys.argv) == 1:
+   G = range(0, 32)
+else:
+   G = []
+   for a in sys.argv[1:]:
+      G.append(int(a))
+   
+for g in G:
+   cb.append(pi.callback(g, pigpio.EITHER_EDGE, cbf))
+
+try:
+   while True:
+      time.sleep(60)
+except KeyboardInterrupt:
+   print("\nTidying up")
+   for c in cb:
+      c.cancel()
+
+pi.stop()
+```
+
+In general there are lots of different capabilities from the code examples, anything that can happen within a 5us timeframe can be extended from pigpio, and functionized,
+then translated into a Python function (rather than building something from scratch). Basically this gives easy extensibility for python code.
+
+So in essence, there should be a way to run a python program which uses this daemon to check for GPIO levels, on whatever basis is needed, by making calls to pigpio.
+
+#### Shutting Down the Rpi from Python
+
+Python can import, "call" which can then call a shell script.
+
+The shell script which poweroff's the rpi is:
+
+```
+sudo shutdown --poweroff
+```
+Which is unambiguous and does the software poweroff stuff (e.g. non-hardware kill).
+
+The python script would be:
+
+```
+from subprocess import call
+call("sudo shutdown --poweroff", shell=True)
+```
+
+#### Looking into Python Daemon Stuff
+
+So given that we can access the GPIO's via the pigpio library (and we may be able to access them direclty anyway), and that we can actually shut down the Pi within Python:
+
+* We could also create a Python daemon which watches pigpio and shuts down the Pi given certain conditions.
+
+##### Creating a Python Daemon
+
+https://stackoverflow.com/questions/473620/how-do-you-create-a-daemon-in-python
+
+https://pypi.org/project/python-daemon/
+
+Note, when checking out Python, note that we have Python 2 installed, which we should be careful about:
+
+```
+root@raspberrypi:/home/bin# python --version
+Python 2.7.16
+root@raspberrypi:/home/bin# python3 --version
+Python 3.7.3
+```
+We should install pip3 with:
+
+```
+sudo apt-get update
+sudo apt-get install python3-pip
+```
+This didn't work, so we try, after updating:
+
+```
+sudo apt-get install python3-pip --fix-missing
+```
+This appeared to clear some of the 404 errors we had and though there were some libraries that appeared to fail to be fetched, overall it worked.
+
+From here we can install python-daemon:
+
+```
+sudo pip3 install python-daemon
+```
+Which worked successfully.
+
+Then, writing the Daemon:
+
+https://stackoverflow.com/questions/4637420/efficient-python-daemon
+
+```
+#!/usr/bin/python
+
+import daemon
+import time
+
+def do_something():
+    while True:
+        with open("/tmp/current_time.txt", "w") as f:
+            f.write("The time is now " + time.ctime())
+        time.sleep(5)
+
+def run():
+    with daemon.DaemonContext():
+        do_something()
+
+if __name__ == "__main__":
+    run()
+```
+
+
+Once we wrote the Daemon, we have to find it's PID number:
+
+https://www.linuxquestions.org/questions/linux-general-1/how-do-i-find-the-pid-of-a-daemon-742027/
+
+```
+ps aux
+root     17984  6.1  2.7  14616  6900 ?        S    03:37   0:38 python3 pythons
+root     17988  5.8  2.7  14616  6868 ?        S    03:37   0:34 python3 pythons
+```
+There were two python3 daemons we started, one right after another, with PID's 17984 and 17988.
+
+To tail the logs:
+
+```
+tail -f /proc/17984/fd/1
+```
+Nothing coming out.
+
+Then there's trusty old strace:
+
+```
+strace -e trace=open -p 17988
+```
+Neither of which produce anything.
+
+So, we need to modify our python code to output something to the log possibly to ensure that it's working.
+
+We could just run the python code as a regular python script, before even running it as a daemon, to help simplify things.
+
+We can kill the processes that are not working with:
+
+```
+sudo kill -9 PID
+```
+Turning the Daemon into a while loop that just runs:
+
+```
+#!/usr/bin/python
+
+import daemon
+import time
+
+def do_something():
+    while True:
+        print(("The time is now " + time.ctime()))
+        time.sleep(5)
+
+# def run():
+#    with daemon.DaemonContext():
+#        do_something()
+
+if __name__ == "__main__":
+    do_something()
+```
+After verifying that the above works and does indeed print out the time to the shell, we can go ahead and create a file within the directory that we're in, and write the time.
+
+So we write to a file that we created in our directory, and the time shows up as expected.
+
+So next we can turn this into a daemon by calling, "run()" rather than, "dosomething()"
+
+After making this change and running, "pythonstuffd.py" we are sent back to the command line.
+
+Checking the current time text file, it does not actually update. Perhaps this is because the daemon is running on the CPU or something rather than in the directory we're in.
+
+This might be why we attempt to write to something in the /tmp folder.
+
+When we tail, /tmp/whatever.log we should be able to see the output.
+
+So when we do this, and then we wait a bit for the process to get going, our python code looks like:
+
+```
+#!/usr/bin/python
+
+import daemon
+import time
+
+def do_something():
+    while True:
+        with open("/tmp/test.log", "w") as f:
+            f.write("The time is now " + time.ctime())
+            # print(("The time is now " + time.ctime()))
+            time.sleep(5)
+
+def run():
+    with daemon.DaemonContext():
+        do_something()
+
+if __name__ == "__main__":
+    run()
+```
+And the tail output of the log looks like:
+
+```
+root@raspberrypi:/home/bin# tail -f /tmp/test.log
+The time is now Fri Mar 25 04:19:54 2022tail: /tmp/test.log: file truncated
+The time is now Fri Mar 25 04:20:00 2022tail: /tmp/test.log: file truncated
+The time is now Fri Mar 25 04:20:05 2022tail: /tmp/test.log: file truncated
+The time is now Fri Mar 25 04:20:10 2022tail: /tmp/test.log: file truncated
+The time is now Fri Mar 25 04:20:15 2022tail: /tmp/test.log: file truncated
+The time is now Fri Mar 25 04:20:20 2022tail: /tmp/test.log: file truncated
+The time is now Fri Mar 25 04:20:25 2022tail: /tmp/test.log: file truncated
+The time is now Fri Mar 25 04:20:30 2022tail: /tmp/test.log: file truncated
+```
+So basically this successfully is checking the time and printing it out to that log tail.
+
+How much of the CPU and memory, etc. does this take up?
+
+```
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root     18134 24.4  2.7  14616  6936 ?        S    04:19   0:34 python3 pythons
+```
+This shows close to a quarter of the CPU, which might or might not be accurate.
+
+However, we could lengthen the amount of time in between samples and sleep to see if this brings the CPU usage down.
+
+CPU usage did appear to go down to 12.2% after an initial startup period.
+
+#### Attempting to Monitor GPIO Pins with Python Only
+
+https://forums.raspberrypi.com/viewtopic.php?t=43069
+
+There does appear to be a way to monitor a pin directly, but the downside is that it only checks the input at the moment it runs the loop, so basically for a fraction of a
+second once every second. This might differ from using pigpio and the pigpio library / daemon underneath, and calling on that, which has a buffer.
+
+Essentially, using a python Daemon with a loop in combination with pigpio might be a superior solution, however the CPU usage may go up. Also pigpio is hardware-timed, which may
+mean there is more accuracy.
+
+#### Pushing Data from Raspberry Pi to a Remote Database
+
+It doesn't seem to make sense to keep all of the data on a RPi, and maintain a database, as there isn't a lot of operation that's needed on the RPi itself, we're not building
+edge intelligence as much as cloud intelligence with data gathered from the edge.
+
+The edge unit could have some simple instructions based upon what the cloud determines - e.g. we could feed in a preventative shutdown signal.
+
+We could test out https://www.elephantsql.com/
+
+##### Attempting a Curl to ElephantSQL with Whatever Data
+
+https://www.elephantsql.com/docs/python.html
+
+```
+pip3 install psycopg2
+Successfully installed psycopg2-2.9.3
+```
+
+Then using Elephant SQL:
+
+```
+import os
+import urllib.parse as up
+import psycopg2
+
+up.uses_netloc.append("postgres")
+url = up.urlparse(os.environ["DATABASE_URL"])
+conn = psycopg2.connect(database=url.path[1:],
+user=url.username,
+password=url.password,
+host=url.hostname,
+port=url.port
+)
+```
+* We will have to set up a new table at the onset of working with a database after connecting to the database.
+* Once the table is setup, we can pass data and commit it.
+
+https://www.psycopg.org/docs/usage.html
+
+* Our RPi will have the ability to write to this database.
+* However another client could have the ability to read and display data from this database.
+
+We get 20MB, so how much data is per row?  We can figure out how many posts we can get, calculating:
+
+```
+(D bytes per database) / ((N posts per timeperiod)*(S bytes per post)) = D/(N*S) = 200MB/(N*S) = timeperiods per database
+```
+#### Designing the Database
+
+The database should be fairly simple:
+
+* | Date/Time | Measured GPIO Input |
+
+We could hypothetically also add an ID, but the timestamp itself could serve as an ID.
+
+This does not assume any buffering if there is a lost WiFi connection, this just assumes the connection is always on.
+
+Other ideas for things to add:
+
+* Signal Strength - maybe over the last X timestamps, capture over time and send a batch of most recent measurements
+* Temperature - there is an inaccurate onbaord temperature monitoring mechanism. https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#measuring-temperatures
+* CPU - this shouldn't vary too much, but could be interesting to see if it changes with temperature, or if we remote into the RPi or something.
+
+There is also EEPROM, so hypothetically a state could be stored.
+
+
+### Writing a Simple Python Program to Send Data to ElephantSQL
+
+```
+#!/usr/bin/python
+
+import os
+import urllib.parse as up
+import psycopg2
+
+up.uses_netloc.append("postgres")
+url = up.urlparse(os.environ["postgres://riobslkg:Y5Mzefvu40Ah7OcS77W82mzscsts9Jo9@kashin.db.elephantsql.com/riobslkg"])
+conn = psycopg2.connect(database=url.path[1:],
+user=url.username,
+password=url.password,
+host=url.hostname,
+port=url.port
+)
+```
+After running this, I get an error:
+
+```
+from psycopg2._psycopg import (                     # noqa
+ImportError: libpq.so.5: cannot open shared object file: No such file or directory
+```
+However, I thought I had installed psycopg2, using ```pip3 install psycopg2```
+
+After attempting to install it again, we get:
+
+```
+Requirement already satisfied: psycopg2 in /usr/local/lib/python3.7/dist-packages (2.9.3)
+```
+So first off, I should find the path:
+
+```
+find / -name libpq.so.5
+```
+This turns up with nothing.  However, it appears that we have to install postgres on our RPi, even if we are accessing a remote database.
+Psycopg2 assumes that you have various postgres libraries installed.
+
+However, installing postgres overall may be overcall, you may only need libpq5.
+
+```
+sudo apt install postgresql --fix-missing
+
+sudo apt install libpq5 --fix-missing
+
+```
+Neither of these seemed to work!
+
+Attempted to install the library via:
+
+```
+pip3 install libpq 
+```
+However, then we get a, "404 Client," not found for pypi.org.
+
+So, we may not even be connected to the internet!
+
+Somehow our attempt to connect via the URL may have caused a problem with our nameserver or something.
+
+#### Attempting to Reconnect
+
+```
+root@raspberrypi:/home/bin# cat /etc/resolv.conf
+# Generated by resolvconf
+nameserver 10.0.2.3
+```
+This means the container is obtaining an incorrect nameserver.  Rather than doing something fancy to fix this, just restart the container:
+
+```
+docker run --name rpi_container -it lukechilds/dockerpi
+```
+Of course we lost the previous state of the container, but we can go back and re-install stuff, we're still at the playing around point and don't really need everything yet.
+
+
+
+
+### Having the RPi Read from Another Application
+
+* Hypothetically, RPI could curl a Flask application endpoint, it doesn't even have to be an API, where the endpoint reports whether the RPi should stay on or turn off.
+* Having it non-public would be more secure, having it as an API, or just having some kind of code that means off vs. ON or whatever behavior.
+* Part of the problem is of course, we don't have a way to turn the RPi back on, we would need some other kind of microcontroller in the circuit to do that.
+* We also would need some kind of understanding of what the RPi is going to be doing, what the payload is, what kind of on/off pattern we want in general.
+* The most logical would be fore the RPi to just collect solar data and then shut down prior to sunset, to be turned back on prior to sunrise.
+* In extreme circumstances where the battery didn't get enough power, we could opt to shut the RPi down, for it to be turned on the next day.
+* The following day, it could report the battery voltage in the morning, and given a new calculation check the new, "Report" from the flask applciation, 
+which could tell the RPi whether to stay shut off for another day (basically, skip a day of voltage monitoring).
+* If the RPI skips a day of monitoring, the assumption would be that the battery voltage is going to go up if the forecast shows sunny.
+* After reporting the new voltage again the following day, the RPI can wait again for a new report based upon the new battery voltage and upcoming weather, and be told to either 
+skip another day, or to go ahead and monitor voltage for the day.
+
+After running this algorithm for a while, it can always be refined for seasonality, battery age, and various other factors.
+
+What we would be optimizing for is uptime and just maximum operation of being able to monitor solar input (via the battery voltage), given a solar panel size.
+
+If the solar panel is too big and battery is too big, it will never need to shut down, we monitor 365 days.
+
+We don't want to monitor 365 days, we can make statistical assumptions that certain years are going to be like past years, so we only need to monitor X number of days
+in order to build improved models for future years.
+
+There may be other unforseen factors such as capability to connct to WiFi, we may need to tell the RPI what to do in the scenario that it can't connect...basically a wait to
+connect time.
+
+
+##### Converting Data to JSon Prior to Pushing to ElephantSQL
+
+
+### Hardware Used to Monitor Voltage
+
+https://www.ti.com/lit/ds/symlink/ads1015.pdf
+
+
+### Power Consumption
+
+There are different strategies for reducing Raspberry Pi Power consumption which have to do with shutting down different interfaces, clocking down the CPU, etc.
+
+https://blues.io/blog/tips-tricks-optimizing-raspberry-pi-power/
+
+There are also hardware-oriented strategies.
+
+Noteable as well, there are also ready-built solar battery optimization kits for Raspberry Pi.
