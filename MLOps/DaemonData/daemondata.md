@@ -822,10 +822,26 @@ Of course we lost the previous state of the container, but we can go back and re
 
 After re-setting up the container, it worked and we were able to successfully install and fix errors. The setup method used was put into a setup script for the Rpi.
 
-Attempting to connect again with our stock Python code shown above,
+Attempting to connect again with our stock Python code shown above, I get a KeyError this time.
 
+```
+  File "/usr/lib/python3.7/os.py", line 678, in __getitem__
+    raise KeyError(key) from None
+KeyError: '[DATABASE_URL}'
+```
+With our database URL being the combination of our password.
 
+We can also pipe data to a new database:
 
+```
+pg_dump postgres://user:pass@host/db | psql postgres://user:pass@host2/newdb
+```
+
+However, I was able to connect using the standard psycopg2.connect methodology:
+
+```
+conn = psycopg2.connect("dbname='my_dbname' user='my_user' host='my_host' password='my_password'")
+```
 
 ### Having the RPi Read from Another Application
 
@@ -871,3 +887,148 @@ https://blues.io/blog/tips-tricks-optimizing-raspberry-pi-power/
 There are also hardware-oriented strategies.
 
 Noteable as well, there are also ready-built solar battery optimization kits for Raspberry Pi.
+
+### Installing Ngrok
+
+https://medium.com/@gaelollivier/connect-to-your-raspberry-pi-from-anywhere-using-ngrok-801e9fd1dd46
+
+equinox certificate expired
+
+https://www.mathewjenkinson.com/how-to-install-ngrok-on-a-raspberrypi/
+
+This should be added to the setup script:
+
+```
+sudo apt-get update -y && sudo apt-get upgrade -y
+```
+
+Then:
+
+```
+wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-arm.zip
+The certificate of ‘bin.equinox.io’ is not trusted.
+```
+Use the --no-check-certificate flag.
+
+We may need to change the mv command below.  Note!  The first time we tried this, we did not cd into /tmp, but is recommended to cd into /tmp first before running wget.
+
+```
+sudo wget --no-check-certificate https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-arm.zip
+sudo unzip ngro*
+sudo mkdir ~/ngrok
+sudo mv ngrok ~/ngrok
+```
+We didn't seem to be able to make an executable, regardless of where we put ngrok. However, if we attempt to use it in the folder we're in:
+
+```
+
+grok by @inconshreveable                                       (Ctrl+C to quit)
+
+Session Status                online
+Session Expires               1 hour, 59 minutes
+Version                       2.3.40
+Region                        United States (us)
+Web Interface                 http://127.0.0.1:4040
+Forwarding                    http://c613-207-153-48-94.ngrok.io -> http://local
+Forwarding                    https://c613-207-153-48-94.ngrok.io -> http://loca
+
+Connections                   ttl     opn     rt1     rt5     p50     p90
+                              0       0       0.00    0.00    0.00    0.00
+```
+When we attempted to tunnel in, we got:
+
+```
+The connection to https://c613-207-153-48-94.ngrok.io was successfully tunneled to your ngrok client, 
+but the client failed to establish a connection to the local address localhost:3000.
+```
+So, we try this again, but instead of using port 3000, we use 4040.  In this situation, we got:
+
+```
+./ngrok http 4040
+ERR_NGROK_6022
+Before you can serve HTML content, you must sign up for a free ngrok account and install your authtoken.
+```
+Fair enough, at least the tunnel worked.
+
+But can we tunnel in using ssh and not HTML?
+
+Yes, we can, using, "tcp 22" rather than "html".
+
+```
+./ngrok tcp 22
+TCP tunnels are only available after you sign up.
+Sign up at: https://dashboard.ngrok.com/signup
+
+If you have already signed up, make sure your authtoken is installed.
+Your authtoken is available on your dashboard: https://dashboard.ngrok.com/get-started/your-authtoken
+
+ERR_NGROK_302
+```
+So to setup our authtoken, there's a ready-made screen with the ngrok command ready and the authtoken listed:
+
+```
+sudo ngrok authtoken [AUTHTOKEN]
+```
+Now attempting the tcp command again:
+
+It looks like there is actually a way to do an ngrok tunnel without even using the ngrok agent, by basically using an SSH public key.
+
+When we attempt to connect, it doesn't let us, it does another 404 not found error and asks us to sign up for an account.
+
+There is also advice, "restart the ngrok agent."
+
+It seems that the ngrok agent is not picking up the auth token, probably because we're running it from a random location.
+
+We can try the alternate tunneling method, rather than using the ngrok agent.
+
+```
+ssh-keygen
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/pi/.ssh/id_rsa):
+Could not create directory '/home/pi/.ssh': No space left on device
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Saving key "/home/pi/.ssh/id_rsa" failed: No such file or directory
+```
+Doing a fancier version that sets up folders ahead of time:
+
+https://www.raspberrypi-spy.co.uk/2019/02/setting-up-ssh-keys-on-the-raspberry-pi/
+
+Through a bunch of commands, I was able to connect.  However, then we get a different error:
+
+```
+socket: Address family not supported by protocol
+connect_to localhost port 80: failed.
+ERR_NGROK_3004
+ngrok gateway error The server returned an invalid or incomplete HTTP response.
+```
+
+So this doesn't seem to work either.
+
+Looking into the "Your Authentication" section of the ngrok website, we see that it mentions:
+
+```
+Alternatively, you can directly add the Authtoken to your ngrok.yml configuration file. By default this file is located at ~/.ngrok2/ngrok.yml.
+```
+
+When we look into this location, we can't find it on the raspberry pi.
+
+Instead, the command is saying that the Authtoken is being saved to, "/root/.ngrok2/ngrok.yml"
+
+Using the snapd store:
+
+```
+sudo apt update
+sudo apt install snapd
+sudo reboot
+```
+
+but rebooting kicked us out of the Rpi!
+
+Otherwise, we should have been able to do:
+
+```
+sudo snap install core
+sudo snap install ngrok
+```
+
