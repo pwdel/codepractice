@@ -1049,6 +1049,260 @@ There is also a solar radiation API.
 
 * https://openweathermap.org/api/solar-radiation
 
+
+#### Creating a Cron Job
+
+* Start out by creating a super simple python script which just writes, "hello world" to a file.
+
+```
+#!user/bin/python3
+import time
+
+# open file as f
+# append text with 'a'
+with open('readme.txt', 'a') as f:
+    # get the time
+    timenow = time.ctime()
+    # create a string to input to f.write()
+    entrystring = timenow + ' ' + 'hello world'
+    # write the string
+    f.write(entrystring)
+    f.writelines('\n')    
+```
+
+Next, we create a chrontab expression with crontab guru. https://crontab.guru/
+
+The following will execute, "at minute 1" - basically, every minute.  Recall that fractions can be used if sub-minute expressions are needed.
+
+```
+1 * * * *
+```
+
+We find out where python3 is with, "which python3"
+
+```
+which python3
+/usr/bin/python3
+```
+
+We then use, "crontab -e" to enter the crontab editor.
+
+If this doesn't work, we need to read about crontab files.  https://manpages.debian.org/jessie/cron/crontab.5.en.html
+
+Basically, need to install, "cron" for the usage of, "crontab" :
+
+```
+sudo apt-get -y install cron
+```
+Then, using, "crontab -e" will open up a file:
+
+```
+# Edit this file to introduce tasks to be run by cron.
+#
+# Each task to run has to be defined through a single line
+# indicating with different fields when the task will be run
+# and what command to run for the task
+#
+# To define the time you can provide concrete values for
+# minute (m), hour (h), day of month (dom), month (mon),
+# and day of week (dow) or use '*' in these fields (for 'any').
+#
+# Notice that tasks will be started based on the cron's system
+# daemon's notion of time and timezones.
+#
+# Output of the crontab jobs (including errors) is sent through
+# email to the user the crontab file belongs to (unless redirected).
+#
+# For example, you can run a backup of all your user accounts
+# at 5 a.m every week with:
+# 0 5 * * 1 tar -zcf /var/backups/home.tgz /home/
+#
+# For more information see the manual pages of crontab(5) and cron(8)
+#
+# m h  dom mon dow   command
+
+1 * * * * /usr/bin/python3 /home/bin/writetofile.py
+```
+
+* The format of the job added above is, "crontab_schedule command_path file_path"
+
+The job can be listed with, "crontab -l" which is the same as cat'ing the cronfile.
+
+Checking the file to see if it's being written to, you may have to verify that it's working.
+
+```
+update-rc.d cron defaults
+/etc/init.d/cron start
+```
+
+We need to install systemctl
+
+```
+apt-get install -y systemctl
+
+...
+
+systemctl status cron
+cron.service - Regular background program processing daemon
+    Loaded: loaded (/lib/systemd/system/cron.service, enabled)
+    Active: inactive (dead)
+
+```
+
+This shows that cron.service is dead.  So we need to activate it:
+
+```
+systemctl enable cron.service
+systemctl start cron.service
+```
+This didn't seem to work.
+
+```
+systemctl enable cron.service
+systemctl start cron.service
+systemctl status cron.service
+```
+
+1. We may need to give write permission to the script.
+
+```
+chmod a+x writetofile.py
+```
+
+2. Need to add proper interrobang at start of python file:
+
+```
+#!/user/bin/python3
+```
+3. Find the realpath of the python file:
+
+```
+realpath writetofile.py
+/home/bin/writetofile.py
+```
+4. Find the real path of python3 itself:
+
+```
+which python3
+/usr/bin/python3
+```
+
+Wrong environment problem:
+
+https://askubuntu.com/questions/23009/why-crontab-scripts-are-not-working
+
+##### The PATH Variable
+
+In order to understand why this is not working, we need to understand the concept of, "PATH."
+
+Basically, $PATH is a list of directories, physical directories which act as a pointer for which, when we tell a shell to activate a script, it goes into $PATH and looks through a list of directories for the particular script name, in order, and executes the first script mathing the name in question.
+
+The default setup for path in debian is:
+
+```
+/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:
+```
+
+Which means that upon activating a script, the shell would look through, in order:
+
+* /usr/local/sbin
+* /usr/local/bin
+* /usr/sbin
+* /usr/bin
+* /sbin
+* /bin
+
+...in order.
+
+> PATH is an environmental variable in Linux and other Unix-like operating systems that tells the shell which directories to search for executable files (i.e., ready-to-run programs) in response to commands issued by a user. It increases both the convenience and the safety of such operating systems and is widely considered to be the single most important environmental variable.
+
+Note that, "bin" is the most core, important folder, where the most system-critical elements are typically stored, whereas /usr/local/sbin are less system critical, like a package manager for applications, which are stored in /usr/local/bin
+
+So the shell goes through less critical folders first before moving onto more critical folders - which is a safer way of operating.
+
+We can add to a path by doing:
+
+```
+export PATH="$PWD:$PATH"
+```
+...which would add the current directory to $PATH, starting from the left, so basically in the safest and most recent position.  So if we had a script, such as writetofile.py, sitting in /home/bin, and we added it to path:
+
+To add this permanently to the path, we would need to edit bashrc.
+
+```
+nano ~/.bashrc
+
+export PATH="/home/bin/:$PATH"
+```
+Then we could restart this by running, "source ~/.bashrc"
+
+...Which permanently adds /home/bin/ to the $PATH variable, after closing and restarting the terminal.
+
+Also very important, is to make sure that the proper path is being used at the top of the python file to instruct which interpreter is to be used.  We must use, "#!/usr/bin/python3" and not "#!/user/bin/python3" otherwise the file won't know what interpretor to use.
+
+So now that we know what the $PATH variable is, we need to understand that the crontab does not see the $PATH variable from withinside of it. Additionally, crontab does not interpret $VARIABLES, it only reads things literally. So we have to add a literal path variable into the crontab file:
+
+```
+# PATH VARIABLE TO APPLY TO ALL CRONJOBS
+PATH=/home/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+```
+
+Which will instruct the cron to look into all of these folders for the executable in question.
+
+We can double check that this is what the cron understands is the path by adding the job:
+
+```
+* * * * * env > /tmp/env.output
+```
+
+and then looking at the file after it changes (after the cron job runs):
+
+```
+cat /tmp/env.output
+PATH=/home/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+```
+
+Once everything is fixed, the actual job itself calling the python script can run, adding to crontab -e:
+
+```
+* * * * * writetofile.py
+```
+
+Now it should work, but where is the file being sent?
+
+By default, the crontab belongs to root, and a user can be selected with "-u" as well.
+
+So, we look in the ~/root folder to see the readme.md file.
+
+If we want the file to be written somewhere else, for example, an output file under /home/output we do:
+
+```
+* * * * * cd /home/output && writetofile.py
+```
+Now when we go cd into /home/output and look, there should be a readme.txt file in there with an actual timestamp, per what we programmed.
+
+Note that everything after the function call * * * * * is essentially a shell function, and differing lines must be connected with a logical connector such as &&, but multiple actions and scripts could be set up to be run.
+
+### Tying It All Together for Collecting Weather Data
+
+* Since we have established the following abilities:
+
+- Setup run a cron job
+- Setup a custom /hom/bin and $PATH
+- Setup remote postgres table
+- Write to remote postgres table
+- Call from OpenWeatherMap API
+
+* Now it would seem to make sense to tie this all together in a deployable, "release," designed to turn into an application which deploys on a Heroku instance, for example, or just runs on whatever local machine, to do the work of adding data to the database on a regular basis.
+* This application could be in a seperate repo from any software that runs on the RPi, which would be perhaps a Cron job that reads GPIO levels, translates it to voltage data and writes that to another database table.
+
+The combination of the above would be the sum total of the data collection interfaces.
+
+* Need to understand how to use SQLAlchemy to make organization of SQL Calls easier.
+* Need to be able to install everything needed in Dockerfile, including cron job
+* Need to be able to run an entrypoint script, which kicks off daemons, creates cron job, unfurls everything when Docker deployed.
+* Use environmental variables throughout code to keep secure and allow code with releases - include ENV setup in readme.
+
 ### Having the RPi Read from Another Application
 
 * Hypothetically, RPI could curl a Flask application endpoint, it doesn't even have to be an API, where the endpoint reports whether the RPi should stay on or turn off.
@@ -1075,10 +1329,6 @@ in order to build improved models for future years.
 There may be other unforseen factors such as capability to connct to WiFi, we may need to tell the RPI what to do in the scenario that it can't connect...basically a wait to
 connect time.
 
-
-##### Converting Data to JSon Prior to Pushing to ElephantSQL
-
-
 ### Hardware Used to Monitor Voltage
 
 https://www.ti.com/lit/ds/symlink/ads1015.pdf
@@ -1093,6 +1343,9 @@ https://blues.io/blog/tips-tricks-optimizing-raspberry-pi-power/
 There are also hardware-oriented strategies.
 
 Noteable as well, there are also ready-built solar battery optimization kits for Raspberry Pi.
+
+https://www.arrow.com/en/research-and-events/articles/can-you-run-a-raspberry-pi-on-solar-power 
+
 
 ### Installing Ngrok
 

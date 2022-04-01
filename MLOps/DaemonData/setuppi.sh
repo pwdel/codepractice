@@ -33,3 +33,11 @@ sudo apt install libpq5 --fix-missing
 
 
 # ---------------- install  --------------------------------
+
+
+
+apt-get install -y cron
+
+apt-get install -y pcregrep
+
+apt-get install -y systemctl
