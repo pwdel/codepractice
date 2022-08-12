@@ -1,0 +1,18 @@
+version: '3.1'
+
+services:
+  playwithjupyter_pandas:
+    image: jupyter/custom-notebook
+    build: .
+    container_name: jupyter_custom-notebook_container
+    working_dir: /home/
+    # command:
+    ports: 
+      - 8888:8888
+    volumes:
+      - type: bind
+        source: ./volumebindmount
+        target: /home/jovyan/work
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    tty: true
