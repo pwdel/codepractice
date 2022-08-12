@@ -1,7 +1,7 @@
-Accessors
-Attributes
-Attributes and underlying data
-BQuarterBegin
+* Accessors
+* Attributes
+* Attributes and underlying data
+* BQuarterBegin
 BQuarterEnd
 BYearBegin
 BYearEnd
@@ -93,7 +93,6 @@ STATA
 Second
 SemiMonthBegin
 SemiMonthEnd
-Serialization / IO / conversion
 Serialization / IO / conversion
 Series
 Sparse accessor
