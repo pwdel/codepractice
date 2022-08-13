@@ -1,45 +1,29 @@
 * Accessors
 * Attributes
-* Attributes and underlying data
-* BQuarterBegin
-BQuarterEnd
-BYearBegin
-BYearEnd
-Binary operator functions
-Boolean data with missing values
-Bug report function
-Builtin styles
-BusinessDay
-BusinessHour
-BusinessMonthBegin
-BusinessMonthEnd
-Categorical data
-Clipboard
-Combining / comparing / joining / merging
-Computations / descriptive stats
-Constructor
-Conversion
-CustomBusinessDay
-CustomBusinessHour
-CustomBusinessMonthBegin
-CustomBusinessMonthEnd
-Data manipulations
-Data types related functionality
-DataFrame
-Date offsets
-DateOffset
-Datetime data
-DatetimeIndex
-Day
-Easter
-Excel
-Exceptions and warnings
-Expanding window functions
-Exponentially-weighted window functions
-Extensions
-FY5253
-FY5253Quarter
-Feather
+* Binary operator functions
+* Boolean data with missing values
+* Bug report function
+* Builtin styles
+* Categorical data
+* Clipboard
+* Combining / comparing / joining / merging
+* Computations / descriptive stats
+* Constructor
+* Conversion
+* Data manipulations
+* Data types related functionality
+* DataFrame
+* Date offsets
+* Datetime data
+* DatetimeIndex
+* Day
+* Easter
+* Excel
+* Exceptions and warnings
+* Expanding window functions
+* Exponentially-weighted window functions
+* Extensions
+* Feather
 Flags
 Flat file
 Frequencies
