@@ -6,7 +6,9 @@
 * Builtin styles
 * Categorical data
 * Clipboard
+
 * Combining / comparing / joining / merging
+
 * Computations / descriptive stats
 * Constructor
 * Conversion
@@ -24,24 +26,24 @@
 * Exponentially-weighted window functions
 * Extensions
 * Feather
-Flags
-Flat file
-Frequencies
-Function application
-Function application, GroupBy & window
-General functions
-General utility functions
-Google BigQuery
-GroupBy
-HDFStore: PyTables (HDF5)
-HTML
-Hashing
-Hour
-Index
-Index objects
-Indexing, iteration
-Input/output
-Interval data
+* Flags
+* Flat file
+* Frequencies
+* Function application
+* Function application, GroupBy & window
+* General functions
+* General utility functions
+* Google BigQuery
+* GroupBy
+* HDFStore: PyTables (HDF5)
+* HTML
+* Hashing
+* Hour
+* Index
+* Index objects
+* Indexing, iteration
+* Input/output
+* Interval data
 IntervalIndex
 JSON
 LastWeekOfMonth
