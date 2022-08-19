@@ -1,63 +1,49 @@
-Accessors
-Attributes
-Attributes and underlying data
-BQuarterBegin
-BQuarterEnd
-BYearBegin
-BYearEnd
-Binary operator functions
-Boolean data with missing values
-Bug report function
-Builtin styles
-BusinessDay
-BusinessHour
-BusinessMonthBegin
-BusinessMonthEnd
-Categorical data
-Clipboard
-Combining / comparing / joining / merging
-Computations / descriptive stats
-Constructor
-Conversion
-CustomBusinessDay
-CustomBusinessHour
-CustomBusinessMonthBegin
-CustomBusinessMonthEnd
-Data manipulations
-Data types related functionality
-DataFrame
-Date offsets
-DateOffset
-Datetime data
-DatetimeIndex
-Day
-Easter
-Excel
-Exceptions and warnings
-Expanding window functions
-Exponentially-weighted window functions
-Extensions
-FY5253
-FY5253Quarter
-Feather
-Flags
-Flat file
-Frequencies
-Function application
-Function application, GroupBy & window
-General functions
-General utility functions
-Google BigQuery
-GroupBy
-HDFStore: PyTables (HDF5)
-HTML
-Hashing
-Hour
-Index
-Index objects
-Indexing, iteration
-Input/output
-Interval data
+* Accessors
+* Attributes
+* Binary operator functions
+* Boolean data with missing values
+* Bug report function
+* Builtin styles
+* Categorical data
+* Clipboard
+
+* Combining / comparing / joining / merging
+
+* Computations / descriptive stats
+* Constructor
+* Conversion
+* Data manipulations
+* Data types related functionality
+* DataFrame
+* Date offsets
+* Datetime data
+* DatetimeIndex
+* Day
+* Easter
+* Excel
+* Exceptions and warnings
+* Expanding window functions
+* Exponentially-weighted window functions
+* Extensions
+* Feather
+* Flags
+* Flat file
+* Frequencies
+* Function application
+* Function application, GroupBy & window
+* General functions
+* General utility functions
+* Google BigQuery
+* GroupBy
+* HDFStore: PyTables (HDF5)
+* HTML
+* Hashing
+* Hour
+* Index
+* Index objects
+* Indexing, iteration
+* Input/output
+* Interval data
 IntervalIndex
 JSON
 LastWeekOfMonth
@@ -93,7 +79,6 @@ STATA
 Second
 SemiMonthBegin
 SemiMonthEnd
-Serialization / IO / conversion
 Serialization / IO / conversion
 Series
 Sparse accessor
