@@ -9,7 +9,7 @@ LABEL author="Patrick Delaney"
 USER root
 
 # install depdencies
-RUN pip install pandas numpy sentence-transformers
+RUN pip install pandas numpy sentence-transformers sklearn matplotlib
 
 # Switch back to jovyan to avoid accidental container runs as root
 USER $NB_UID
