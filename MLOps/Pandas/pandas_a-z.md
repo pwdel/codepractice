@@ -7,7 +7,7 @@
 * Categorical data
 * Clipboard
 
-* Combining / comparing / joining / merging
+* ombining / comparing / joining / merging
 
 * Computations / descriptive stats
 * Constructor
