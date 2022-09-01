@@ -6,6 +6,8 @@ services:
     build: .
     container_name: aes_jupyternotebook_container
     working_dir: /home/jovyan/work
+    environment:
+    - PASSWORD=password
     # command:
     ports: 
       - 8888:8888
