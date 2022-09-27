@@ -1,0 +1,20 @@
+version: '3.1'
+
+services:
+  pdfscrape_jupyternotebook:
+    image: jupyter/minimal-notebook/pdfscrape:ubuntu-22.04
+    build: .
+    container_name: pdfscrape_jupyternotebook_container
+    working_dir: /home/jovyan/work
+    # environment:
+    # - PASSWORD=password
+    # command:
+    ports: 
+      - 8888:8888
+    volumes:
+      - type: bind
+        source: ./volumebindmount
+        target: /home/jovyan/work
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    tty: true
