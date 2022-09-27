@@ -1,13 +1,13 @@
 version: '3.1'
 
 services:
-  aes_jupyternotebook:
-    image: jupyter/minimal-notebook:ubuntu-22.04
+  pdfscrape_jupyternotebook:
+    image: jupyter/minimal-notebook/pdfscrape:ubuntu-22.04
     build: .
-    container_name: aes_jupyternotebook_container
+    container_name: pdfscrape_jupyternotebook_container
     working_dir: /home/jovyan/work
-    environment:
-    - PASSWORD=password
+    # environment:
+    # - PASSWORD=password
     # command:
     ports: 
       - 8888:8888

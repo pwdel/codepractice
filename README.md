@@ -14,5 +14,3 @@ Code practice from various platforms.
 * Linux Shell
 * [Python](https://github.com/pwdel/codepractice/tree/main/HR-Python)
 * [Regex](https://github.com/pwdel/codepractice/tree/main/HR-Regex)
-* SQL
-* Functional Programming

@@ -1,0 +1,28 @@
+
+digraph Overall {
+  { 
+    node [margin=1 fontcolor=black fontsize=12 width=1 shape=box style=filled]
+    transformer [fillcolor=white fixedsize=true label="Transformer"]
+  }
+  {
+    node [margin=1 fontcolor=black fontsize=12 width=1 shape=cylinder style=filled]     
+    cluster [fillcolor=white fixedsize=true label="Clustered"] 
+  }  
+  {
+    node [margin=1 fontcolor=black fontsize=12 width=1 shape=component style=filled]
+    bagOfWords [fillcolor=white fixedsize=true label="Bag of Words"]
+  }
+  {
+    node [margin=1 fontcolor=black fontsize=12 width=1 shape=invhouse style=filled]     
+    candidates [fillcolor=white fixedsize=true label="Candidates"]
+  }
+  {
+    node [margin=1 fontcolor=black fontsize=12 width=1 shape=folder style=filled]     
+    subcorpus [fillcolor=white fixedsize=true label="Subcorpus"]
+  }  
+
+  transformer -> {cluster}
+  cluster -> {bagOfWords}
+  bagOfWords -> {candidates}
+  candidates -> {subcorpus}
+}
