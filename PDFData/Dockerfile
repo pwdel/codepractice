@@ -8,7 +8,12 @@ LABEL author="Patrick Delaney"
 # switch to user root briefly
 USER root
 
-# install depdencies
+# Install dependencies
+RUN pip install --upgrade pip &&    \
+    pip install --upgrade awscli    \
+    pip install --upgrade boto3     \
+    pip install PyPDF2              \
+    pip install python-dotenv
 
 # Switch back to jovyan to avoid accidental container runs as root
 USER $NB_UID
